@@ -21,12 +21,27 @@ class OTPRequestView(APIView):
         serializer = OTPRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         phone = User.objects.normalize_phone(serializer.validated_data["phone"])
+        channel = serializer.validated_data["channel"]
 
         static_code = settings.OTP_DEBUG_STATIC_CODE if settings.DEBUG else None
-        otp = OTPCode.issue(phone, settings.OTP_TTL_SECONDS, static_code=static_code)
-        send_otp_sms(phone, otp.code)
+        otp = OTPCode.issue(phone, settings.OTP_TTL_SECONDS, static_code=static_code, channel=channel)
 
-        data = {"phone": phone, "ttl": settings.OTP_TTL_SECONDS}
+        data = {"phone": phone, "ttl": settings.OTP_TTL_SECONDS, "channel": channel}
+
+        if channel == OTPCode.Channel.TELEGRAM:
+            if not settings.TELEGRAM_BOT_USERNAME:
+                return error_response(
+                    "telegram_not_configured",
+                    "Telegram orqali kod olish hozircha sozlanmagan",
+                    "Получение кода через Telegram пока не настроено",
+                    503,
+                )
+            data["telegram_deep_link"] = (
+                f"https://t.me/{settings.TELEGRAM_BOT_USERNAME}?start={otp.link_token}"
+            )
+        else:
+            send_otp_sms(phone, otp.code)
+
         if settings.DEBUG:
             data["debug_code"] = otp.code
         return Response(data, status=status.HTTP_200_OK)
@@ -64,9 +79,23 @@ class OTPVerifyView(APIView):
             phone=phone,
             defaults={"role": serializer.validated_data.get("role", User.Role.BUYER)},
         )
+        update_fields = []
         if not user.verified_phone:
             user.verified_phone = True
-            user.save(update_fields=["verified_phone"])
+            update_fields.append("verified_phone")
+
+        # Delivered via the Telegram bot deep link → the person proved they control that chat
+        # by pressing Start, so link it to the account the same way /start's contact-share
+        # flow does (see apps/telegrambot/views.py).
+        if otp.telegram_chat_id and user.telegram_id != otp.telegram_chat_id:
+            already_taken = User.objects.filter(telegram_id=otp.telegram_chat_id).exclude(pk=user.pk).exists()
+            if not already_taken:
+                user.telegram_id = otp.telegram_chat_id
+                user.telegram_username = otp.telegram_username
+                update_fields += ["telegram_id", "telegram_username"]
+
+        if update_fields:
+            user.save(update_fields=update_fields)
 
         refresh = RefreshToken.for_user(user)
         return Response(

@@ -68,18 +68,24 @@ function view() {
       <i class="ph ph-phone"></i>
       <input id="phone" inputmode="tel" value="+998 " placeholder="+998 90 123 45 67">
     </label>
-    <button class="btn btn-primary btn-lg btn-block" id="send">Kod olish</button>
+    <button class="btn btn-primary btn-lg btn-block" id="send">SMS orqali kod olish</button>
+    <button class="btn btn-tg btn-block btn-lg" id="send-tg"><i class="ph-fill ph-telegram-logo"></i>Telegram orqali kod olish</button>
     <div class="row" style="gap:10px"><span style="flex:1;height:1px;background:var(--line)"></span>
       <span class="caption">yoki</span><span style="flex:1;height:1px;background:var(--line)"></span></div>
-    <button class="btn btn-tg btn-block btn-lg" id="tg-login"><i class="ph-fill ph-telegram-logo"></i>Telegram orqali kirish</button>
     <button class="btn btn-outline btn-block" id="oneid"><i class="ph ph-identification-badge"></i>OneID (davlat xizmatlari)</button>
     <p class="caption">Davom etish orqali <a href="#">Foydalanish shartlari</a> va <a href="#">Maxfiylik siyosati</a>ga rozilik bildirasiz.</p>`;
 
   if (stage === 'otp') return `
     <div class="stack" style="gap:8px">
       <h1 style="font-size:27px">Kodni kiriting</h1>
-      <p class="muted tiny"><b id="p-echo"></b> raqamiga 4 xonali kod yubordik.</p>
+      <p class="muted tiny">${channel === 'telegram'
+        ? `Telegram botimiz (<b id="p-echo"></b>) sizga 4 xonali kod yubordi.`
+        : `<b id="p-echo"></b> raqamiga 4 xonali kod yubordik.`}</p>
     </div>
+    ${channel === 'telegram' ? `
+    <a class="btn btn-tg btn-block" id="tg-open" href="${tgDeepLink}" target="_blank" rel="noopener">
+      <i class="ph-fill ph-telegram-logo"></i>Telegramni ochish</a>
+    <p class="caption">Bot ochilmasa — yuqoridagi tugmani qayta bosing yoki @${tgBotUsername()} ni qidiring.</p>` : ''}
     <div class="otp" id="otp">${[0,1,2,3].map(i => `<input inputmode="numeric" maxlength="1" data-i="${i}">`).join('')}</div>
     <button class="btn btn-primary btn-lg btn-block" id="verify">Tasdiqlash</button>
     <div class="spread"><button class="btn btn-ghost btn-sm" id="back"><i class="ph ph-arrow-left"></i>Raqamni o'zgartirish</button>
@@ -117,6 +123,9 @@ function render() {
   wire();
 }
 let phone = '+998 90 123 45 67';
+let channel = 'sms';
+let tgDeepLink = '';
+const tgBotUsername = () => (tgDeepLink.match(/t\.me\/([^?]+)/) || [])[1] || 'uyim_bot';
 
 function wire() {
   el('role')?.addEventListener('click', e => {
@@ -129,8 +138,8 @@ function wire() {
     if (phone.replace(/\D/g, '').length < 9) return Uyim.toast("To'liq raqam kiriting", 'ph-warning');
     const btn = el('send'); btn.disabled = true;
     try {
-      const res = await UyimAPI.otpRequest(phone);
-      stage = 'otp'; render();
+      const res = await UyimAPI.otpRequest(phone, 'sms');
+      channel = 'sms'; stage = 'otp'; render();
       Uyim.toast(res.debug_code ? `SMS yuborildi · demo kod ${res.debug_code}` : "SMS yuborildi", 'ph-chat-teardrop-text');
     } catch (e) {
       Uyim.toast(e.message || "SMS yuborilmadi, qaytadan urinib ko'ring", 'ph-warning');
@@ -138,11 +147,26 @@ function wire() {
       btn.disabled = false;
     }
   });
-  el('tg-login')?.addEventListener('click', () => Uyim.toast("Telegram orqali kirish @uyim_bot ichida /start bilan ishlaydi", 'ph-telegram-logo'));
+  el('send-tg')?.addEventListener('click', async () => {
+    phone = el('phone').value.trim() || phone;
+    if (phone.replace(/\D/g, '').length < 9) return Uyim.toast("To'liq raqam kiriting", 'ph-warning');
+    const btn = el('send-tg'); btn.disabled = true;
+    try {
+      const res = await UyimAPI.otpRequest(phone, 'telegram');
+      tgDeepLink = res.telegram_deep_link;
+      channel = 'telegram'; stage = 'otp'; render();
+      window.open(tgDeepLink, '_blank');
+      Uyim.toast(res.debug_code ? `Telegram ochildi · demo kod ${res.debug_code}` : "Telegram botni oching", 'ph-telegram-logo');
+    } catch (e) {
+      Uyim.toast(e.message || "Telegram orqali kod olib bo'lmadi, SMSni sinab ko'ring", 'ph-warning');
+    } finally {
+      btn.disabled = false;
+    }
+  });
   el('oneid')?.addEventListener('click', () => Uyim.toast("OneID integratsiyasi backend bosqichida ulanadi", 'ph-info'));
 
   if (stage === 'otp') {
-    el('p-echo').textContent = phone;
+    el('p-echo').textContent = channel === 'telegram' ? `@${tgBotUsername()}` : phone;
     const ins = [...document.querySelectorAll('#otp input')];
     ins[0].focus();
     ins.forEach((inp, i) => inp.addEventListener('input', () => {

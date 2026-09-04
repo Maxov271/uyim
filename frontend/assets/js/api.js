@@ -91,7 +91,8 @@ window.UyimAPI = (() => {
   }
 
   /* ---------------- domain calls ---------------- */
-  const otpRequest = (phone) => request('POST', '/auth/otp/request', { body: { phone } });
+  const otpRequest = (phone, channel = 'sms') =>
+    request('POST', '/auth/otp/request', { body: { phone, channel } });
   const otpVerify = (phone, code, role) =>
     request('POST', '/auth/otp/verify', { body: { phone, code, role } }).then((d) => {
       setTokens(d.access, d.refresh);

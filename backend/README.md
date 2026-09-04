@@ -13,7 +13,7 @@ platformasi. Implements the full API contract from [`CLAUDE_CODE_PROMPT.md`](../
 | Geo | Plain lat/lng + Haversine (no PostGIS/GDAL dependency — see note below) |
 | Fon vazifalar | Celery + Redis (dev: `CELERY_TASK_ALWAYS_EAGER=True`, no broker needed) |
 | SMS | Eskiz.uz (falls back to console/debug OTP when unconfigured) |
-| Telegram | Raw Bot API calls (`apps/telegrambot`) — auto-publish, push, /start phone-link |
+| Telegram | Raw Bot API calls (`apps/telegrambot`) — auto-publish, push, /start phone-link, Telegram-delivered OTP login |
 | To'lov | Payme (JSON-RPC merchant API) + Click (Prepare/Complete) |
 | Fayl | Local `MEDIA_ROOT` in dev; point `django-storages` at S3/MinIO for prod |
 
@@ -95,6 +95,21 @@ plus a few pragmatic additions:
 - `POST /api/telegram/webhook/<secret>` — Telegram Bot API webhook receiver.
 
 All error responses use the required shape: `{code, message_uz, message_ru}`.
+
+### OTP login via Telegram (no SMS)
+
+`POST /api/auth/otp/request {phone, channel: "telegram"}` returns a
+`telegram_deep_link` (`https://t.me/<bot>?start=<token>`) instead of sending an SMS. When the
+user opens it and presses **Start**, the bot webhook (`apps/telegrambot/views.py`) looks up
+the token, delivers the same 4-digit code as a chat message, and records that chat's
+`telegram_id`. `POST /api/auth/otp/verify` is unchanged — same code, same endpoint — and
+additionally links `telegram_id`/`telegram_username` onto the account the moment it verifies,
+so the account is bot-notifiable (saved searches, new leads) without a separate linking step.
+Requires `TELEGRAM_BOT_USERNAME` set (the token itself doesn't need a live bot to *generate* —
+only to *deliver*, so requesting a link works even before `TELEGRAM_BOT_TOKEN` is configured;
+delivery obviously needs a real, webhook-registered bot). Verified end-to-end locally by
+posting a synthetic Telegram update straight at the webhook endpoint and confirming the
+account came out linked — see git history for the test script if useful as a reference.
 
 ## How the frontend connects
 
