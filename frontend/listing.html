@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>E'lon — Uyim.uz</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/duotone/style.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="assets/css/app.css">
+<style>.leaflet-container{background:var(--surface-2)}</style>
+</head>
+<body>
+
+<div class="wrap">
+  <nav class="crumbs" id="crumbs"></nav>
+
+  <div class="gallery" style="margin-top:14px">
+    <div>
+      <i class="ph-duotone ph-image" style="font-size:40px"></i>
+      <div class="pcard-badges" id="hero-badges"></div>
+      <span class="pcard-count" id="photo-count"></span>
+    </div>
+    <div><i class="ph-duotone ph-image" style="font-size:26px"></i></div>
+    <div>
+      <i class="ph-duotone ph-cube" style="font-size:26px"></i>
+      <button class="btn btn-sm" style="position:absolute;bottom:14px">360° virtual tur</button>
+    </div>
+  </div>
+
+  <div class="detail">
+    <div class="stack" style="gap:26px">
+      <div class="stack" style="gap:10px">
+        <div class="row" style="gap:14px;flex-wrap:wrap;align-items:baseline">
+          <b class="num" style="font-size:36px;font-weight:800;letter-spacing:-.03em" id="price"></b>
+          <span class="muted" id="price-sub"></span>
+        </div>
+        <h1 id="title"></h1>
+        <span class="pcard-place" id="place"></span>
+        <div class="row" style="gap:7px;flex-wrap:wrap;margin-top:4px" id="trust"></div>
+      </div>
+
+      <div class="spec-grid" id="specs"></div>
+
+      <div class="stack" style="gap:10px">
+        <h3>Tavsif</h3>
+        <p class="muted" style="max-width:64ch" id="desc"></p>
+      </div>
+
+      <div class="stack" style="gap:10px">
+        <h3>Xususiyatlar</h3>
+        <dl class="dl" id="props"></dl>
+      </div>
+
+      <div class="stack" style="gap:10px">
+        <h3>Qulayliklar</h3>
+        <div class="chip-row" id="features"></div>
+      </div>
+
+      <div class="stack" style="gap:12px">
+        <div class="spread"><h3>Narx tarixi</h3><span class="caption">Oxirgi 5 oy</span></div>
+        <div class="card pad" style="display:flex;gap:22px;align-items:flex-end">
+          <div class="bars" style="flex:1" id="history"></div>
+        </div>
+      </div>
+
+      <div class="stack" style="gap:10px">
+        <h3>Joylashuv va infratuzilma</h3>
+        <div class="minimap"><div id="mini"></div></div>
+        <div class="chip-row" id="poi"></div>
+      </div>
+    </div>
+
+    <aside class="sticky">
+      <div class="card pad stack" style="gap:16px;box-shadow:var(--shadow)">
+        <div class="agent">
+          <div class="ava"><i class="ph-duotone ph-user"></i></div>
+          <div class="stack" style="gap:3px;flex:1">
+            <b id="agent-name" style="font-size:15px"></b>
+            <span class="tiny" id="agent-meta" style="color:var(--emerald);font-weight:700"></span>
+          </div>
+        </div>
+        <div class="stack" style="gap:8px">
+          <button class="btn btn-primary btn-lg btn-block" id="call"><i class="ph-fill ph-phone"></i><span id="phone"></span></button>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <a class="btn btn-tg" href="https://t.me/uyim_bot" target="_blank" rel="noopener"><i class="ph-fill ph-telegram-logo"></i>Telegram</a>
+            <button class="btn btn-outline" id="chat"><i class="ph ph-chat-circle-dots"></i>Chat</button>
+          </div>
+        </div>
+        <div class="tgnote" id="tgnote"></div>
+        <div style="height:1px;background:var(--line)"></div>
+        <a class="row" id="mortgage-cta" href="#" style="gap:12px;color:inherit">
+          <span style="width:42px;height:42px;border-radius:12px;background:var(--emerald-tint);color:var(--emerald);display:grid;place-items:center;font-size:21px"><i class="ph-duotone ph-calculator"></i></span>
+          <span class="stack" style="gap:2px;flex:1">
+            <b style="font-size:14.5px" id="m-monthly"></b>
+            <span class="caption">15% boshlang'ich · 15 yil · Ipoteka Bank</span>
+          </span>
+          <i class="ph ph-arrow-right" style="color:var(--emerald)"></i>
+        </a>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <button class="btn btn-outline btn-sm" id="fav"><i class="ph ph-heart"></i>Saqlash</button>
+          <button class="btn btn-outline btn-sm" id="cmp"><i class="ph ph-scales"></i>Taqqoslash</button>
+        </div>
+      </div>
+      <div class="note"><i class="ph-duotone ph-shield-check"></i>
+        <span>Oldindan to'lov qilmang. Kelishuvni notariusda rasmiylashtiring — Uyim vositachini va kadastrni tekshiradi.</span></div>
+      <div class="card pad-sm stack" style="gap:8px">
+        <span class="flabel">E'lon ma'lumoti</span>
+        <div class="spread tiny"><span class="muted">ID</span><b id="lid"></b></div>
+        <div class="spread tiny"><span class="muted">Joylangan</span><b id="created"></b></div>
+        <div class="spread tiny"><span class="muted">Ko'rishlar</span><b class="num" id="views"></b></div>
+      </div>
+    </aside>
+  </div>
+
+  <section class="sec" style="padding-top:0">
+    <div class="sec-head"><h2>O'xshash e'lonlar</h2>
+      <a class="btn btn-outline btn-sm" href="search.html">Yana <i class="ph ph-arrow-right"></i></a></div>
+    <div class="grid g3" id="similar"></div>
+  </section>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/ui.js"></script>
+<script>
+Uyim.mount({ active:'sale', mobile:'search' });
+const D = UyimData;
+const l = Uyim.byId(Uyim.qs('id')) || D.LISTINGS[0];
+const a = D.AGENTS.find(x => x.id === l.agent) || D.AGENTS[0];
+const d = D.DISTRICTS.find(x => x.id === l.district);
+
+document.title = Uyim.titleOf(l) + ' — ' + Uyim.placeOf(l) + ' — Uyim.uz';
+document.getElementById('crumbs').innerHTML =
+  `<a href="index.html">Asosiy</a><span>/</span><a href="search.html?deal=${l.deal}">${Uyim.dealLabel(l.deal)}</a>
+   <span>/</span><a href="search.html?district=${l.district}">${d.name}</a><span>/</span><span>${l.mahalla}</span>`;
+
+document.getElementById('hero-badges').innerHTML = Uyim.badges(l) + Uyim.trustBadges(l);
+document.getElementById('photo-count').innerHTML = `<i class="ph ph-image"></i> 1 / ${l.photos}`;
+document.getElementById('price').textContent = Uyim.priceLabel(l);
+document.getElementById('price-sub').textContent = Uyim.uzs(l.price) + ' · ' + Uyim.ppm(l);
+document.getElementById('title').textContent = Uyim.titleOf(l);
+document.getElementById('place').innerHTML =
+  `<i class="ph ph-map-pin" style="color:var(--emerald)"></i>${Uyim.placeOf(l)}${l.metro ? ` · Metro ${l.metro} ${l.metroMin} daqiqa` : ''}`;
+document.getElementById('trust').innerHTML = Uyim.trustBadges(l) +
+  `<span class="badge"><i class="ph ph-eye"></i>${l.views} ko'rish</span>`;
+document.getElementById('desc').textContent = l.desc;
+
+const spec = (i, b, s) => `<div><i class="ph-duotone ${i}"></i><b>${b}</b><span class="caption">${s}</span></div>`;
+document.getElementById('specs').innerHTML =
+  spec('ph-door', l.rooms ? l.rooms + ' xona' : l.type, 'alohida') +
+  spec('ph-ruler', l.area + ' m²', 'umumiy maydon') +
+  spec('ph-stairs', l.floors ? `${l.floor}/${l.floors}` : '—', l.floors ? 'qavat · lift bor' : 'qavat yo\'q') +
+  spec('ph-paint-roller', l.condition, l.year + '-yil');
+
+document.getElementById('props').innerHTML = [
+  ['Bitim turi', Uyim.dealLabel(l.deal)], ['Mulk turi', l.type],
+  ['Xonalar soni', l.rooms || '—'], ['Umumiy maydon', l.area + ' m²'],
+  ['Qavat', l.floors ? `${l.floor} / ${l.floors}` : '—'],
+  ['Qurilgan yili', l.year], ['Ta\'mirlash holati', l.condition],
+  ['1 m² narxi', Uyim.ppm(l)], ['Ipoteka', l.mortgage ? 'Mumkin' : 'Yo\'q'],
+  ['Mahalla (MFY)', l.mahalla]
+].map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
+
+document.getElementById('features').innerHTML = l.features.map(x => `<span class="chip" aria-pressed="false" style="cursor:default">${x}</span>`).join('');
+
+const hist = l.priceHistory.concat([{ m:'Sen', v:l.price }]);
+const max = Math.max(...hist.map(h => h.v));
+document.getElementById('history').innerHTML = hist.map((h, i) => `
+  <div><span class="bar ${i === hist.length-1 ? 'on' : ''}" style="height:${Math.round(h.v/max*100)}%"></span>
+  <small>${h.m}<br>${Uyim.usd(h.v)}</small></div>`).join('');
+
+document.getElementById('poi').innerHTML = [
+  ['ph-train-simple', `Metro ${l.metro || '—'} · ${l.metroMin} daq`], ['ph-student', 'Maktab 400 m'],
+  ['ph-basket', 'Bozor 1,2 km'], ['ph-first-aid-kit', 'Poliklinika 700 m'], ['ph-tree', 'Bog\' 300 m']
+].map(([i, t]) => `<span class="chip" style="cursor:default"><i class="ph ${i}"></i>${t}</span>`).join('');
+
+document.getElementById('agent-name').textContent = a.name;
+document.getElementById('agent-meta').innerHTML = `<i class="ph-fill ph-seal-check"></i> ` +
+  (a.type === 'agency' ? `Ishonchli agentlik · ${a.years} yil · ${a.listings} e'lon` : 'Tasdiqlangan egasi');
+document.getElementById('phone').textContent = a.phone.replace(/(\d{2}) (\d{3})/, '$1 ***');
+document.getElementById('call').addEventListener('click', () => location.href = 'tel:' + a.phone.replace(/\s/g,''));
+document.getElementById('chat').addEventListener('click', () => Uyim.contactModal(l));
+document.getElementById('tgnote').innerHTML =
+  `<i class="ph-fill ph-telegram-logo"></i><span>Bu e'lon <b>@${l.district}_uylar</b> kanalida ham chiqqan</span>`;
+
+const m = Uyim.mortgage({ price:l.price, downPct:15, years:15, rate:17 });
+document.getElementById('m-monthly').textContent = 'Ipoteka ' + Uyim.usd(m.monthly) + '/oy';
+document.getElementById('mortgage-cta').href = `calculator.html?price=${l.price}&id=${l.id}`;
+
+const favBtn = document.getElementById('fav'), cmpBtn = document.getElementById('cmp');
+const paint = () => {
+  favBtn.innerHTML = `<i class="ph${Uyim.isFav(l.id) ? '-fill' : ''} ph-heart"></i>${Uyim.isFav(l.id) ? 'Saqlangan' : 'Saqlash'}`;
+  cmpBtn.innerHTML = `<i class="ph ph-scales"></i>${Uyim.inCompare(l.id) ? 'Taqqoslashda' : 'Taqqoslash'}`;
+};
+paint();
+favBtn.addEventListener('click', () => { Uyim.toggleFav(l.id); paint(); });
+cmpBtn.addEventListener('click', () => { Uyim.toggleCompare(l.id); paint(); });
+
+document.getElementById('lid').textContent = l.id.toUpperCase().replace('L', 'UY-');
+document.getElementById('created').textContent = l.created;
+document.getElementById('views').textContent = l.views;
+
+const mini = Uyim.initMap(document.getElementById('mini'), { center:[l.lat, l.lng], zoom:15 });
+if (mini) { Uyim.priceMarker(l).addTo(mini); L.circle([l.lat, l.lng], { radius:400, color:'#0F7A5C', weight:1.5, fillOpacity:.06 }).addTo(mini); }
+
+document.getElementById('similar').innerHTML = D.LISTINGS
+  .filter(x => x.id !== l.id && x.deal === l.deal)
+  .sort((x, y) => Math.abs(x.price - l.price) - Math.abs(y.price - l.price))
+  .slice(0, 3).map(x => Uyim.propertyCard(x)).join('');
+</script>
+</body>
+</html>

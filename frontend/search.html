@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Qidiruv va xarita — Uyim.uz</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/duotone/style.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+<link rel="stylesheet" href="assets/css/app.css">
+<style>
+  .leaflet-container{background:var(--surface-2);font-family:var(--font)}
+  .marker-cluster{background:transparent}
+  .leaflet-bar a{background:var(--surface);color:var(--ink);border-color:var(--line)}
+</style>
+</head>
+<body>
+
+<main class="split" id="split">
+  <section class="split-list" id="list-pane">
+    <div class="toolbar">
+      <div class="card pad-sm" style="display:flex;flex-direction:column;gap:12px">
+        <div class="chip-scroll" id="deal-chips"></div>
+        <div class="filters">
+          <label class="fgroup">
+            <span class="flabel">Tuman / mahalla</span>
+            <select id="f-district" class="chip" style="min-height:42px;border-radius:10px"></select>
+          </label>
+          <div class="fgroup range">
+            <span class="flabel">Narx, ming $</span>
+            <div class="range-val"><span id="pmin-l">20</span><span id="pmax-l">300</span></div>
+            <input type="range" id="f-pmin" min="10" max="300" step="5" value="20">
+            <input type="range" id="f-pmax" min="10" max="300" step="5" value="300">
+          </div>
+          <div class="fgroup">
+            <span class="flabel">Xonalar</span>
+            <div class="pillcount" id="f-rooms"></div>
+          </div>
+          <div class="fgroup range">
+            <span class="flabel">Maydon, m² dan</span>
+            <div class="range-val"><span id="area-l">30 m²</span><span class="muted">300+</span></div>
+            <input type="range" id="f-area" min="20" max="300" step="5" value="30">
+          </div>
+        </div>
+        <div class="filters-more hide" id="more">
+          <div class="fgroup range">
+            <span class="flabel">Qavat</span>
+            <div class="range-val"><span id="floor-l">1 qavatdan</span><span class="muted">1–20</span></div>
+            <input type="range" id="f-floor" min="1" max="20" value="1">
+          </div>
+          <label class="fgroup">
+            <span class="flabel">Mulk turi</span>
+            <select id="f-type" class="chip" style="min-height:42px;border-radius:10px"></select>
+          </label>
+          <label class="fgroup">
+            <span class="flabel">Holati</span>
+            <select id="f-cond" class="chip" style="min-height:42px;border-radius:10px">
+              <option value="">Barchasi</option><option>Evro ta'mir</option><option>O'rta ta'mir</option>
+              <option>Ta'mir talab</option><option>Oq holat</option><option>Qurilish tugagan</option>
+            </select>
+          </label>
+          <div class="fgroup" style="gap:2px">
+            <span class="flabel">Qo'shimcha</span>
+            <button class="switch" data-sw="verified" aria-pressed="false"><span class="tiny">Faqat tasdiqlangan</span><span class="switch-track"></span></button>
+            <button class="switch" data-sw="mortgage" aria-pressed="false"><span class="tiny">Ipoteka mumkin</span><span class="switch-track"></span></button>
+            <button class="switch" data-sw="tg" aria-pressed="false"><span class="tiny">Telegram kanalda</span><span class="switch-track"></span></button>
+          </div>
+        </div>
+        <div class="sortbar">
+          <button class="btn btn-ghost btn-sm" id="more-btn"><i class="ph ph-sliders-horizontal"></i>Ko'proq filtr</button>
+          <button class="btn btn-ghost btn-sm" id="reset"><i class="ph ph-eraser"></i>Tozalash</button>
+          <span style="flex:1"></span>
+          <div class="seg" id="sort" role="group" aria-label="Saralash">
+            <button data-sort="new" aria-pressed="true">Eng yangi</button>
+            <button data-sort="cheap" aria-pressed="false">Narx ↑</button>
+            <button data-sort="rich" aria-pressed="false">Narx ↓</button>
+            <button data-sort="pop" aria-pressed="false">Mashhur</button>
+          </div>
+        </div>
+      </div>
+      <div class="spread">
+        <div class="stack" style="gap:2px">
+          <b id="count" class="num" style="font-size:17px">—</b>
+          <span class="caption" id="count-sub">Chilonzor va atrofi</span>
+        </div>
+        <div class="row" style="gap:8px">
+          <button class="btn btn-outline btn-sm" id="save-search"><i class="ph ph-bell-simple"></i>Qidiruvni saqlash</button>
+          <div class="seg" id="view" role="group" aria-label="Ko'rinish">
+            <button data-view="both" aria-pressed="true">Ikkalasi</button>
+            <button data-view="list" aria-pressed="false">Ro'yxat</button>
+            <button data-view="map" aria-pressed="false">Xarita</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="grid" id="results" style="grid-template-columns:1fr;gap:14px"></div>
+    <div class="note hide" id="empty" style="margin-top:16px">
+      <i class="ph-duotone ph-magnifying-glass"></i>
+      <span>Bu shartlarga mos e'lon topilmadi. Narx oralig'ini kengaytiring yoki mahalla filtrini olib tashlang.</span>
+    </div>
+  </section>
+
+  <section class="split-map" id="map-pane">
+    <div class="map-fallback">Xarita yuklanmoqda…</div>
+    <div id="map"></div>
+    <div class="map-tools">
+      <button class="btn btn-sm" id="radius-btn" aria-pressed="false"><i class="ph ph-circle-dashed"></i>Radius qidiruv</button>
+      <button class="btn btn-sm" id="draw-clear"><i class="ph ph-x-circle"></i>Hududni tozalash</button>
+      <span style="flex:1"></span>
+      <button class="btn btn-sm" id="fit"><i class="ph ph-crosshair"></i>Natijalarga moslash</button>
+    </div>
+  </section>
+</main>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/ui.js"></script>
+<script>
+Uyim.mount({ active:(Uyim.qs('deal')||'sale'), mobile:'search' });
+const D = UyimData;
+
+const f = {
+  deal: Uyim.qs('deal') || 'sale',
+  district: Uyim.qs('district') || '',
+  pmin: 20, pmax: +(Uyim.qs('pmax') || 300),
+  rooms: new Set(), area: 30, floor: 1, type:'', cond:'',
+  sw: { verified:(Uyim.qs('quick')||'').includes('verified'), mortgage:false, tg:false },
+  sort:'new', radius:null
+};
+
+/* --- filtr chizmalari --- */
+const dealChips = document.getElementById('deal-chips');
+dealChips.innerHTML = D.DEAL_TYPES.map(d =>
+  `<button class="chip" data-deal="${d.id}" aria-pressed="${d.id===f.deal}">${d.label}</button>`).join('');
+dealChips.addEventListener('click', e => {
+  const b = e.target.closest('[data-deal]'); if (!b) return;
+  f.deal = b.dataset.deal;
+  dealChips.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', c.dataset.deal === f.deal));
+  render();
+});
+
+const dSel = document.getElementById('f-district');
+dSel.innerHTML = '<option value="">Butun Toshkent</option>' + D.DISTRICTS.map(d =>
+  `<option value="${d.id}"${d.id===f.district?' selected':''}>${d.name} · ${d.mahallas.length} mahalla</option>`).join('');
+dSel.addEventListener('change', () => { f.district = dSel.value; render(); fitMap(); });
+
+document.getElementById('f-type').innerHTML = '<option value="">Barchasi</option>' + D.PROP_TYPES.map(t => `<option>${t}</option>`).join('');
+
+const roomsEl = document.getElementById('f-rooms');
+const ROOMS = [['1','1'],['2','2'],['3','3'],['4','4'],['5','5+']];
+const drawRooms = () => roomsEl.innerHTML = ROOMS.map(([v,l]) =>
+  `<button data-room="${v}" aria-pressed="${f.rooms.has(v)}">${l}</button>`).join('');
+drawRooms();
+roomsEl.addEventListener('click', e => {
+  const b = e.target.closest('[data-room]'); if (!b) return;
+  f.rooms.has(b.dataset.room) ? f.rooms.delete(b.dataset.room) : f.rooms.add(b.dataset.room);
+  drawRooms(); render();
+});
+
+const bind = (id, key, fmt) => {
+  const el = document.getElementById(id);
+  el.addEventListener('input', () => { f[key] = +el.value; fmt && fmt(el.value); render(); });
+};
+const pminEl = document.getElementById('f-pmin'), pmaxEl = document.getElementById('f-pmax');
+pmaxEl.value = f.pmax;
+const drawPrice = () => {
+  document.getElementById('pmin-l').textContent = f.pmin + ' ming $';
+  document.getElementById('pmax-l').textContent = (f.pmax >= 300 ? '300+' : f.pmax) + ' ming $';
+};
+pminEl.addEventListener('input', () => { f.pmin = Math.min(+pminEl.value, f.pmax - 5); pminEl.value = f.pmin; drawPrice(); render(); });
+pmaxEl.addEventListener('input', () => { f.pmax = Math.max(+pmaxEl.value, f.pmin + 5); pmaxEl.value = f.pmax; drawPrice(); render(); });
+drawPrice();
+bind('f-area','area', v => document.getElementById('area-l').textContent = v + ' m²');
+bind('f-floor','floor', v => document.getElementById('floor-l').textContent = v + ' qavatdan');
+document.getElementById('f-type').addEventListener('change', e => { f.type = e.target.value; render(); });
+document.getElementById('f-cond').addEventListener('change', e => { f.cond = e.target.value; render(); });
+document.querySelectorAll('[data-sw]').forEach(b => b.addEventListener('click', () => {
+  const k = b.dataset.sw; f.sw[k] = !f.sw[k]; b.setAttribute('aria-pressed', f.sw[k]); render();
+}));
+document.querySelectorAll('[data-sw]').forEach(b => b.setAttribute('aria-pressed', f.sw[b.dataset.sw]));
+
+document.getElementById('more-btn').addEventListener('click', () => {
+  const m = document.getElementById('more');
+  m.classList.toggle('hide');
+  document.getElementById('more-btn').innerHTML = m.classList.contains('hide')
+    ? '<i class="ph ph-sliders-horizontal"></i>Ko\'proq filtr' : '<i class="ph ph-caret-up"></i>Filtrni yig\'ish';
+});
+document.getElementById('reset').addEventListener('click', () => {
+  f.pmin = 20; f.pmax = 300; f.rooms.clear(); f.area = 30; f.floor = 1; f.type = ''; f.cond = '';
+  f.district = ''; f.sw = { verified:false, mortgage:false, tg:false }; f.radius = null;
+  pminEl.value = 20; pmaxEl.value = 300; dSel.value = ''; drawPrice(); drawRooms();
+  document.getElementById('f-area').value = 30; document.getElementById('f-floor').value = 1;
+  document.getElementById('area-l').textContent = '30 m²'; document.getElementById('floor-l').textContent = '1 qavatdan';
+  document.querySelectorAll('[data-sw]').forEach(b => b.setAttribute('aria-pressed', false));
+  circle && circle.remove(); circle = null;
+  render(); fitMap();
+});
+document.getElementById('sort').addEventListener('click', e => {
+  const b = e.target.closest('[data-sort]'); if (!b) return;
+  f.sort = b.dataset.sort;
+  document.querySelectorAll('#sort button').forEach(x => x.setAttribute('aria-pressed', x.dataset.sort === f.sort));
+  render();
+});
+document.getElementById('view').addEventListener('click', e => {
+  const b = e.target.closest('[data-view]'); if (!b) return;
+  const v = b.dataset.view;
+  document.querySelectorAll('#view button').forEach(x => x.setAttribute('aria-pressed', x.dataset.view === v));
+  const split = document.getElementById('split');
+  split.style.gridTemplateColumns = v === 'list' ? '1fr 0' : v === 'map' ? '0 1fr' : 'minmax(420px,42%) 1fr';
+  document.getElementById('list-pane').style.display = v === 'map' ? 'none' : '';
+  document.getElementById('map-pane').style.display = v === 'list' ? 'none' : '';
+  setTimeout(() => map && map.invalidateSize(), 60);
+});
+document.getElementById('save-search').addEventListener('click', () => {
+  Uyim.toast("Qidiruv saqlandi — yangi e'lonlar Telegram bot va push orqali keladi", 'ph-bell-ringing');
+});
+
+/* --- xarita --- */
+const mapNode = document.getElementById('map');
+const map = Uyim.initMap(mapNode, { center:[41.2995,69.2401], zoom:12 });
+if (map) document.querySelector('.map-fallback').remove();
+const cluster = map && L.markerClusterGroup({
+  showCoverageOnHover:false, maxClusterRadius:56,
+  iconCreateFunction: c => L.divIcon({ html:`<span class="cluster">${c.getChildCount()}</span>`, className:'', iconSize:null })
+});
+map && map.addLayer(cluster);
+let markers = {}, circle = null;
+
+document.getElementById('radius-btn').addEventListener('click', e => {
+  const on = e.currentTarget.getAttribute('aria-pressed') !== 'true';
+  e.currentTarget.setAttribute('aria-pressed', on);
+  Uyim.toast(on ? "Xaritada markazni bosing — 1,5 km radius chiziladi" : "Radius rejimi o'chdi", 'ph-circle-dashed');
+});
+map && map.on('click', ev => {
+  if (document.getElementById('radius-btn').getAttribute('aria-pressed') !== 'true') return;
+  circle && circle.remove();
+  circle = L.circle(ev.latlng, { radius:1500, color:'#0F7A5C', weight:2, dashArray:'6 5', fillColor:'#0F7A5C', fillOpacity:.08 }).addTo(map);
+  f.radius = { lat:ev.latlng.lat, lng:ev.latlng.lng, r:1500 };
+  render();
+});
+document.getElementById('draw-clear').addEventListener('click', () => {
+  circle && circle.remove(); circle = null; f.radius = null; render();
+});
+document.getElementById('fit').addEventListener('click', fitMap);
+function fitMap() {
+  if (!map) return;
+  const ls = filtered();
+  if (!ls.length) return;
+  map.fitBounds(L.latLngBounds(ls.map(l => [l.lat, l.lng])).pad(0.25), { maxZoom:14 });
+}
+const dist = (a, b) => {
+  const R = 6371000, dLat = (b[0]-a[0]) * Math.PI/180, dLng = (b[1]-a[1]) * Math.PI/180;
+  const x = Math.sin(dLat/2)**2 + Math.cos(a[0]*Math.PI/180) * Math.cos(b[0]*Math.PI/180) * Math.sin(dLng/2)**2;
+  return 2 * R * Math.asin(Math.sqrt(x));
+};
+
+/* --- filtrlash --- */
+function filtered() {
+  const rentish = f.deal === 'rent' || f.deal === 'daily';
+  return D.LISTINGS.filter(l => {
+    if (l.deal !== f.deal) return false;
+    if (f.district && l.district !== f.district) return false;
+    if (!rentish && (l.price < f.pmin*1000 || (f.pmax < 300 && l.price > f.pmax*1000))) return false;
+    if (f.rooms.size && !f.rooms.has(l.rooms >= 5 ? '5' : String(l.rooms))) return false;
+    if (l.area < f.area) return false;
+    if (f.floor > 1 && l.floor < f.floor) return false;
+    if (f.type && l.type !== f.type) return false;
+    if (f.cond && l.condition !== f.cond) return false;
+    if (f.sw.verified && !l.verified) return false;
+    if (f.sw.mortgage && !l.mortgage) return false;
+    if (f.sw.tg && !l.tg) return false;
+    if (f.radius && dist([f.radius.lat, f.radius.lng], [l.lat, l.lng]) > f.radius.r) return false;
+    return true;
+  }).sort((a, b) =>
+    f.sort === 'cheap' ? a.price - b.price :
+    f.sort === 'rich' ? b.price - a.price :
+    f.sort === 'pop' ? b.views - a.views : b.views - a.views);
+}
+
+function render() {
+  const ls = filtered();
+  document.getElementById('count').textContent = ls.length + " e'lon topildi";
+  const d = D.DISTRICTS.find(x => x.id === f.district);
+  document.getElementById('count-sub').textContent =
+    (d ? d.name + ' · ' + d.mahallas.length + ' mahalla' : 'Butun Toshkent') +
+    (f.radius ? ' · 1,5 km radius' : '') + ' · ' + Uyim.dealLabel(f.deal);
+  document.getElementById('results').innerHTML = ls.map(l => Uyim.propertyCard(l)).join('');
+  document.getElementById('empty').classList.toggle('hide', !!ls.length);
+
+  if (map) {
+    cluster.clearLayers(); markers = {};
+    ls.forEach(l => { const m = Uyim.priceMarker(l); markers[l.id] = m; cluster.addLayer(m); });
+  }
+}
+
+/* --- kartochka ↔ pin sinxron hover --- */
+const setActive = (id, on) => {
+  document.querySelector(`.pcard[data-id="${id}"]`)?.classList.toggle('is-active', on);
+  document.querySelector(`[data-pin="${id}"]`)?.classList.toggle('is-active', on);
+};
+document.getElementById('results').addEventListener('mouseover', e => {
+  const c = e.target.closest('.pcard[data-id]'); if (c) setActive(c.dataset.id, true);
+});
+document.getElementById('results').addEventListener('mouseout', e => {
+  const c = e.target.closest('.pcard[data-id]'); if (c) setActive(c.dataset.id, false);
+});
+mapNode.addEventListener('mouseover', e => {
+  const p = e.target.closest('[data-pin]');
+  if (p) { setActive(p.dataset.pin, true); document.querySelector(`.pcard[data-id="${p.dataset.pin}"]`)?.scrollIntoView?.length; }
+});
+mapNode.addEventListener('mouseout', e => {
+  const p = e.target.closest('[data-pin]'); if (p) setActive(p.dataset.pin, false);
+});
+mapNode.addEventListener('click', e => {
+  const p = e.target.closest('[data-pin]');
+  if (p) location.href = 'listing.html?id=' + p.dataset.pin;
+});
+
+render(); fitMap();
+</script>
+</body>
+</html>

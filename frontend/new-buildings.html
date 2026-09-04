@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yangi binolar — Uyim.uz</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/duotone/style.css">
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+
+<div class="wrap sec">
+  <div class="stack" style="gap:8px;margin-bottom:22px">
+    <span class="eyebrow">Birlamchi bozor</span>
+    <h1>Yangi binolar va turar-joy majmualari</h1>
+    <p class="muted" style="max-width:62ch">Quruvchi to'g'ridan-to'g'ri joylagan loyihalar: qurilish bosqichi, topshirish muddati, nasiya va ipoteka shartlari.</p>
+  </div>
+
+  <div class="card pad-sm" style="margin-bottom:20px">
+    <div class="chip-scroll" id="filters"></div>
+  </div>
+
+  <div class="grid" style="grid-template-columns:1fr;gap:16px" id="projects"></div>
+
+  <section class="sec">
+    <div class="sec-head"><h2>Quruvchilar</h2><span class="caption">Tasdiqlangan hamkorlar</span></div>
+    <div class="logo-strip" id="devs"></div>
+  </section>
+
+  <div class="banner">
+    <div class="stack" style="gap:10px">
+      <span class="eyebrow" style="color:#8FE3C4">Nasiya to'g'ridan-to'g'ri quruvchidan</span>
+      <h3>Boshlang'ich 20% · 24 oygacha foizsiz</h3>
+      <p>Ko'pchilik loyihalarda bank ipotekasi va quruvchi nasiyasini birga hisoblash mumkin.</p>
+    </div>
+    <a class="btn btn-cta btn-lg" href="calculator.html"><i class="ph ph-calculator"></i>Hisoblash</a>
+  </div>
+</div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/ui.js"></script>
+<script>
+Uyim.mount({ active:'new', mobile:'search' });
+const D = UyimData;
+
+const PROJECTS = [
+  { name:"Golden Park Residence", dev:"Golden House", district:'yunusobod', from:98000, ppm:1150,
+    ready:"2026 IV chorak", stage:82, blocks:4, flats:640, classes:["Biznes","Yopiq hudud","Yer osti parking"] },
+  { name:"Yangihayot City", dev:"NRG Group", district:'sergeli', from:52000, ppm:820,
+    ready:"2027 II chorak", stage:45, blocks:9, flats:1840, classes:["Komfort","Maktab va bog'cha","Ipoteka 15%"] },
+  { name:"Bodomzor Towers", dev:"Murad Buildings", district:'yunusobod', from:132000, ppm:1480,
+    ready:"Topshirilgan", stage:100, blocks:2, flats:210, classes:["Premium","Panorama","Konsyerj"] },
+  { name:"Chilonzor Terraces", dev:"Akay Group", district:'chilonzor', from:74000, ppm:990,
+    ready:"2026 III chorak", stage:64, blocks:3, flats:410, classes:["Komfort","Nasiya 24 oy","Metro 6 daq"] }
+];
+
+const FILTERS = [["all","Barchasi"],["ready","Topshirilgan"],["2026","2026-yil"],["mortgage","Ipoteka 15%"],["nasiya","Nasiya"],["premium","Premium"]];
+let f = 'all';
+const fEl = document.getElementById('filters');
+const drawF = () => fEl.innerHTML = FILTERS.map(([v, l]) =>
+  `<button class="chip" data-f="${v}" aria-pressed="${v===f}">${l}</button>`).join('');
+drawF();
+fEl.addEventListener('click', e => {
+  const b = e.target.closest('[data-f]'); if (!b) return; f = b.dataset.f; drawF(); draw();
+});
+
+function draw() {
+  const list = PROJECTS.filter(p =>
+    f === 'all' ? true :
+    f === 'ready' ? p.stage === 100 :
+    f === '2026' ? p.ready.includes('2026') :
+    f === 'premium' ? p.classes.includes('Premium') :
+    f === 'nasiya' ? p.classes.some(c => c.includes('Nasiya')) :
+    p.classes.some(c => c.includes('Ipoteka')));
+
+  document.getElementById('projects').innerHTML = list.map(p => {
+    const d = D.DISTRICTS.find(x => x.id === p.district);
+    const m = Uyim.mortgage({ price:p.from, downPct:15, years:15, rate:17 });
+    return `
+    <article class="card" style="display:grid;grid-template-columns:300px 1fr;overflow:hidden">
+      <div style="background:var(--ph);display:grid;place-items:center;color:var(--faint);min-height:210px;position:relative">
+        <i class="ph-duotone ph-buildings" style="font-size:34px"></i>
+        <div class="pcard-badges">
+          <span class="badge badge-new">YANGI BINO</span>
+          ${p.stage === 100 ? '<span class="badge badge-agency">TOPSHIRILGAN</span>' : ''}
+        </div>
+      </div>
+      <div class="pad stack" style="gap:14px">
+        <div class="spread" style="align-items:flex-start">
+          <div class="stack" style="gap:5px">
+            <h3>${p.name}</h3>
+            <span class="pcard-place"><i class="ph ph-map-pin"></i>${d.name} · ${p.dev}</span>
+          </div>
+          <div class="stack" style="gap:3px;align-items:flex-end">
+            <b class="num" style="font-size:21px">${Uyim.usd(p.from)} dan</b>
+            <span class="caption">${Uyim.usd(p.ppm)}/m²</span>
+          </div>
+        </div>
+        <div class="chip-row">${p.classes.map(c => `<span class="chip" style="cursor:default">${c}</span>`).join('')}</div>
+        <div class="grid" style="grid-template-columns:repeat(4,1fr);gap:14px">
+          <div class="stack" style="gap:2px"><span class="caption">Topshirish</span><b class="tiny">${p.ready}</b></div>
+          <div class="stack" style="gap:2px"><span class="caption">Bloklar</span><b class="tiny">${p.blocks} ta</b></div>
+          <div class="stack" style="gap:2px"><span class="caption">Kvartiralar</span><b class="tiny num">${p.flats}</b></div>
+          <div class="stack" style="gap:2px"><span class="caption">Ipoteka</span><b class="tiny num" style="color:var(--emerald)">${Uyim.usd(m.monthly)}/oy</b></div>
+        </div>
+        <div class="stack" style="gap:6px">
+          <div class="spread"><span class="caption">Qurilish bosqichi</span><b class="tiny num">${p.stage}%</b></div>
+          <div style="height:7px;border-radius:4px;background:var(--surface-2);overflow:hidden">
+            <div style="height:100%;width:${p.stage}%;background:${p.stage === 100 ? 'var(--emerald)' : 'var(--gold)'}"></div>
+          </div>
+        </div>
+        <div class="row" style="gap:8px">
+          <a class="btn btn-primary btn-sm" href="search.html?deal=new&district=${p.district}"><i class="ph ph-list-magnifying-glass"></i>Kvartiralarni ko'rish</a>
+          <a class="btn btn-outline btn-sm" href="calculator.html?price=${p.from}"><i class="ph ph-calculator"></i>Ipoteka</a>
+          <button class="btn btn-outline btn-sm" data-tour="${p.name}"><i class="ph ph-cube"></i>3D tur</button>
+        </div>
+      </div>
+    </article>`;
+  }).join('') || `<div class="note"><i class="ph-duotone ph-buildings"></i><span>Bu filtr bo'yicha loyiha topilmadi.</span></div>`;
+}
+
+document.getElementById('projects').addEventListener('click', e => {
+  const b = e.target.closest('[data-tour]');
+  if (b) Uyim.toast(b.dataset.tour + " · 360° tur ochilmoqda", 'ph-cube');
+});
+
+document.getElementById('devs').innerHTML = D.DEVELOPERS.map(d =>
+  `<div><span>${d.name}<br><span class="caption">${d.projects} loyiha · ${d.city}</span></span></div>`).join('');
+
+draw();
+</script>
+</body>
+</html>

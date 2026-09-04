@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kirish va ro'yxatdan o'tish — Uyim.uz</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/duotone/style.css">
+<link rel="stylesheet" href="assets/css/app.css">
+<style>
+  .auth{display:grid;grid-template-columns:1fr 1fr;min-height:calc(100vh - var(--header-h))}
+  .auth-art{background:linear-gradient(150deg,var(--navy-700),var(--navy) 58%,var(--emerald));color:#fff;padding:56px 52px;display:flex;flex-direction:column;justify-content:space-between;gap:40px}
+  .auth-art h2{color:#fff;font-size:30px;max-width:16ch}
+  .auth-art p{color:rgba(255,255,255,.78);max-width:44ch}
+  .auth-form{display:grid;place-items:center;padding:48px 24px}
+  .auth-card{width:min(430px,100%);display:flex;flex-direction:column;gap:18px}
+  .otp{display:flex;gap:9px}
+  .otp input{width:100%;text-align:center;font:800 22px var(--font);border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:14px 0;font-variant-numeric:tabular-nums}
+  @media (max-width:900px){.auth{grid-template-columns:1fr}.auth-art{display:none}}
+</style>
+</head>
+<body>
+
+<main class="auth">
+  <section class="auth-art">
+    <a class="brand" href="index.html" style="color:#fff">
+      <span class="brand-mark" style="background:rgba(255,255,255,.16)"><i class="ph-fill ph-house-line"></i></span>
+      Uyim<span class="brand-dot">.</span>uz</a>
+    <div class="stack" style="gap:16px">
+      <h2>Bir raqam bilan kiring — qidiruvlaringiz botga ulanadi.</h2>
+      <p>Telefon raqami tasdiqlangach sevimlilar, saqlangan qidiruvlar va taqqoslash barcha qurilmalarda sinxronlanadi.</p>
+    </div>
+    <div class="stack" style="gap:12px">
+      <span class="row" style="gap:10px;font-size:14px;color:rgba(255,255,255,.86)"><i class="ph-fill ph-seal-check"></i>Tasdiqlangan e'lonlar va agentliklar</span>
+      <span class="row" style="gap:10px;font-size:14px;color:rgba(255,255,255,.86)"><i class="ph-fill ph-telegram-logo"></i>Telegram bot orqali xabarnomalar</span>
+      <span class="row" style="gap:10px;font-size:14px;color:rgba(255,255,255,.86)"><i class="ph-fill ph-shield-check"></i>Ma'lumotlaringiz uchinchi tomonga berilmaydi</span>
+    </div>
+  </section>
+
+  <section class="auth-form">
+    <div class="auth-card" id="card"></div>
+  </section>
+</main>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/ui.js"></script>
+<script>
+Uyim.mount({ active:'', mobile:'me' });
+const el = id => document.getElementById(id);
+let stage = 'phone', role = 'buyer';
+
+function view() {
+  if (stage === 'phone') return `
+    <div class="stack" style="gap:8px">
+      <h1 style="font-size:27px">Kirish yoki ro'yxatdan o'tish</h1>
+      <p class="muted tiny">Telefon raqamingizni kiriting — SMS orqali bir martalik kod yuboramiz.</p>
+    </div>
+    <div class="seg" id="role">
+      <button data-role="buyer" aria-pressed="true">Xaridor / ijarachi</button>
+      <button data-role="agent" aria-pressed="false">Agent / quruvchi</button>
+    </div>
+    <label class="field" style="min-height:56px">
+      <span class="field-label">Telefon raqami</span>
+      <i class="ph ph-phone"></i>
+      <input id="phone" inputmode="tel" value="+998 " placeholder="+998 90 123 45 67">
+    </label>
+    <button class="btn btn-primary btn-lg btn-block" id="send">Kod olish</button>
+    <div class="row" style="gap:10px"><span style="flex:1;height:1px;background:var(--line)"></span>
+      <span class="caption">yoki</span><span style="flex:1;height:1px;background:var(--line)"></span></div>
+    <button class="btn btn-tg btn-block btn-lg" id="tg-login"><i class="ph-fill ph-telegram-logo"></i>Telegram orqali kirish</button>
+    <button class="btn btn-outline btn-block" id="oneid"><i class="ph ph-identification-badge"></i>OneID (davlat xizmatlari)</button>
+    <p class="caption">Davom etish orqali <a href="#">Foydalanish shartlari</a> va <a href="#">Maxfiylik siyosati</a>ga rozilik bildirasiz.</p>`;
+
+  if (stage === 'otp') return `
+    <div class="stack" style="gap:8px">
+      <h1 style="font-size:27px">Kodni kiriting</h1>
+      <p class="muted tiny"><b id="p-echo"></b> raqamiga 4 xonali kod yubordik.</p>
+    </div>
+    <div class="otp" id="otp">${[0,1,2,3].map(i => `<input inputmode="numeric" maxlength="1" data-i="${i}">`).join('')}</div>
+    <button class="btn btn-primary btn-lg btn-block" id="verify">Tasdiqlash</button>
+    <div class="spread"><button class="btn btn-ghost btn-sm" id="back"><i class="ph ph-arrow-left"></i>Raqamni o'zgartirish</button>
+      <span class="caption">Qayta yuborish · <b id="timer">0:45</b></span></div>`;
+
+  return `
+    <div class="stack" style="gap:8px">
+      <h1 style="font-size:27px">Profilni to'ldiring</h1>
+      <p class="muted tiny">Bu ma'lumotlar e'lon va chatlarda ko'rinadi.</p>
+    </div>
+    <label class="field" style="min-height:56px"><span class="field-label">Ism familiya</span>
+      <i class="ph ph-user"></i><input id="name" placeholder="Dilshod Karimov"></label>
+    <label class="field" style="min-height:56px"><span class="field-label">Shahar</span>
+      <i class="ph ph-map-pin"></i><select id="city">${UyimData.CITIES.map(c => `<option>${c.name}</option>`).join('')}</select></label>
+    ${role === 'agent' ? `
+    <label class="field" style="min-height:56px"><span class="field-label">Agentlik nomi</span>
+      <i class="ph ph-buildings"></i><input id="agency" placeholder="Golden House Agency"></label>
+    <div class="note"><i class="ph-duotone ph-seal-check"></i>
+      <span>“Ishonchli agentlik” belgisi uchun guvohnoma va STIR hujjatlarini kabinetdan yuklaysiz.</span></div>` : `
+    <div class="stack" style="gap:9px">
+      <span class="flabel">Nimani qidiryapsiz?</span>
+      <div class="chip-row" id="intent">
+        ${["Sotib olish","Ijaraga olish","Kunlik ijara","Yangi bino","Investitsiya"].map((t, i) =>
+        `<button class="chip" aria-pressed="${i===0}">${t}</button>`).join('')}
+      </div>
+    </div>`}
+    <button class="switch card pad-sm" id="tg-opt" aria-pressed="true" style="border-radius:12px;text-align:left">
+      <span class="stack" style="gap:3px"><b class="tiny"><i class="ph-fill ph-telegram-logo" style="color:var(--tg)"></i> Telegram botga ulanish</b>
+      <span class="caption">Yangi mos e'lonlar haqida darhol xabar</span></span><span class="switch-track"></span></button>
+    <button class="btn btn-cta btn-lg btn-block" id="finish">Boshlash</button>`;
+}
+
+function render() {
+  el('card').innerHTML = view();
+  wire();
+}
+let phone = '+998 90 123 45 67';
+
+function wire() {
+  el('role')?.addEventListener('click', e => {
+    const b = e.target.closest('[data-role]'); if (!b) return;
+    role = b.dataset.role;
+    el('role').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x.dataset.role === role));
+  });
+  el('send')?.addEventListener('click', () => {
+    phone = el('phone').value.trim() || phone;
+    if (phone.replace(/\D/g, '').length < 9) return Uyim.toast("To'liq raqam kiriting", 'ph-warning');
+    stage = 'otp'; render();
+    Uyim.toast("SMS yuborildi · demo kod 1234", 'ph-chat-teardrop-text');
+  });
+  el('tg-login')?.addEventListener('click', () => { Uyim.toast("Telegram orqali kirish · @uyim_bot ochiladi", 'ph-telegram-logo'); stage = 'profile'; setTimeout(render, 700); });
+  el('oneid')?.addEventListener('click', () => Uyim.toast("OneID integratsiyasi backend bosqichida ulanadi", 'ph-info'));
+
+  if (stage === 'otp') {
+    el('p-echo').textContent = phone;
+    const ins = [...document.querySelectorAll('#otp input')];
+    ins[0].focus();
+    ins.forEach((inp, i) => inp.addEventListener('input', () => {
+      if (inp.value && i < 3) ins[i + 1].focus();
+      if (ins.every(x => x.value)) setTimeout(() => el('verify').click(), 200);
+    }));
+    let t = 45;
+    const tick = setInterval(() => {
+      t--; const n = el('timer'); if (!n) return clearInterval(tick);
+      n.textContent = '0:' + String(Math.max(t, 0)).padStart(2, '0');
+      if (t <= 0) clearInterval(tick);
+    }, 1000);
+    el('verify').addEventListener('click', () => { stage = 'profile'; render(); });
+    el('back').addEventListener('click', () => { stage = 'phone'; render(); });
+  }
+
+  el('tg-opt')?.addEventListener('click', e => {
+    const on = e.currentTarget.getAttribute('aria-pressed') !== 'true';
+    e.currentTarget.setAttribute('aria-pressed', on);
+  });
+  el('intent')?.addEventListener('click', e => {
+    const b = e.target.closest('.chip'); if (!b) return;
+    b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') !== 'true');
+  });
+  el('finish')?.addEventListener('click', () => {
+    Uyim.toast("Xush kelibsiz! Profil yaratildi", 'ph-confetti');
+    setTimeout(() => location.href = role === 'agent' ? 'dashboard-agent.html' : 'dashboard-buyer.html', 900);
+  });
+}
+
+render();
+</script>
+</body>
+</html>

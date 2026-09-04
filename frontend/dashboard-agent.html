@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent kabineti — Uyim.uz</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/duotone/style.css">
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+
+<div class="wrap sec">
+  <div class="spread" style="align-items:flex-end;margin-bottom:22px">
+    <div class="stack" style="gap:8px">
+      <span class="badge badge-agency"><i class="ph-fill ph-seal-check"></i>ISHONCHLI AGENTLIK · 4 YIL</span>
+      <h1>Golden House Agency</h1>
+      <span class="caption">18 faol e'lon · reyting 4,8 · Toshkent</span>
+    </div>
+    <div class="row" style="gap:8px">
+      <button class="btn btn-outline btn-sm" id="tg-btn"><i class="ph-fill ph-telegram-logo" style="color:var(--tg)"></i>Kanallar · 12</button>
+      <a class="btn btn-cta btn-sm" href="add-listing.html"><i class="ph ph-plus-circle"></i>E'lon qo'shish</a>
+    </div>
+  </div>
+
+  <div class="kpis" style="margin-bottom:22px">
+    <div><span class="caption">Ko'rishlar · 30 kun</span><b class="num">18 420</b><span class="trend-up"><i class="ph-fill ph-trend-up"></i> +24%</span></div>
+    <div><span class="caption">Qo'ng'iroqlar</span><b class="num">312</b><span class="trend-up"><i class="ph-fill ph-trend-up"></i> +9%</span></div>
+    <div><span class="caption">Telegram lidlar</span><b class="num">147</b><span class="caption">umumiy lidlarning 47%</span></div>
+    <div><span class="caption">Reklama balansi</span><b class="num">1 240 000</b><span class="caption">so'm</span></div>
+  </div>
+
+  <div class="grid" style="grid-template-columns:1fr 360px;align-items:start">
+    <div class="stack" style="gap:20px">
+      <section class="card pad stack" style="gap:14px">
+        <div class="spread">
+          <h3>Mening e'lonlarim</h3>
+          <div class="seg" id="tabs">
+            <button data-tab="all" aria-pressed="true">Barchasi</button>
+            <button data-tab="active" aria-pressed="false">Faol</button>
+            <button data-tab="moderation" aria-pressed="false">Tekshiruvda</button>
+            <button data-tab="archive" aria-pressed="false">Arxiv</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="table" style="min-width:760px">
+            <thead><tr><th>Obyekt</th><th>Narx</th><th>Ko'rish</th><th>Aloqa</th><th>TG</th><th>Holat</th><th></th></tr></thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card pad stack" style="gap:16px">
+        <div class="spread"><h3>Ko'rishlar dinamikasi</h3><span class="caption">Oxirgi 12 oy</span></div>
+        <div class="bars" id="chart"></div>
+      </section>
+
+      <section class="card pad stack" style="gap:14px">
+        <div class="spread"><h3>Lidlar manbasi</h3><span class="caption">30 kun · 312 lid</span></div>
+        <div class="row" style="gap:26px;flex-wrap:wrap">
+          <svg class="donut" viewBox="0 0 42 42" id="donut"></svg>
+          <div class="legend" id="legend"></div>
+        </div>
+      </section>
+    </div>
+
+    <aside class="stack" style="gap:16px">
+      <section class="banner" style="flex-direction:column;align-items:stretch;gap:14px">
+        <span class="eyebrow" style="color:#8FE3C4">Reklama paketlari</span>
+        <div class="stack" style="gap:10px;font-size:13.5px;color:rgba(255,255,255,.85)">
+          <div class="spread"><span>TOP e'lon · 7 kun</span><b class="num" style="color:#fff">89 000 so'm</b></div>
+          <div class="spread"><span>Qaynoq (HOT) belgisi</span><b class="num" style="color:#fff">45 000 so'm</b></div>
+          <div class="spread"><span>Telegram push · 12 kanal</span><b class="num" style="color:#fff">120 000 so'm</b></div>
+          <div class="spread"><span>Bosh sahifa bannari</span><b class="num" style="color:#fff">350 000 so'm</b></div>
+        </div>
+        <button class="btn btn-cta btn-block" id="boost-all"><i class="ph-fill ph-rocket-launch"></i>Paket tanlash</button>
+      </section>
+
+      <section class="card pad stack" style="gap:12px">
+        <div class="spread"><h3 style="font-size:16px">Telegram avto-nashr</h3>
+          <button class="switch" aria-pressed="true"><span class="switch-track"></span></button></div>
+        <p class="caption">Yangi e'lonlar tasdiqlangach quyidagi kanallarga avtomatik chiqadi.</p>
+        <div class="chip-row">
+          <span class="chip" style="cursor:default"><i class="ph-fill ph-telegram-logo" style="color:var(--tg)"></i>@chilonzor_uylar</span>
+          <span class="chip" style="cursor:default"><i class="ph-fill ph-telegram-logo" style="color:var(--tg)"></i>@yunusobod_kv</span>
+          <span class="chip" style="cursor:default">+10 kanal</span>
+        </div>
+      </section>
+
+      <section class="card pad stack" style="gap:12px">
+        <h3 style="font-size:16px">So'nggi lidlar</h3>
+        <div class="stack" style="gap:12px" id="leads"></div>
+      </section>
+    </aside>
+  </div>
+</div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/ui.js"></script>
+<script>
+Uyim.mount({ active:'', mobile:'me' });
+const D = UyimData;
+const el = id => document.getElementById(id);
+
+const own = D.LISTINGS.slice(0, 8).map((l, i) => ({
+  l, views: 1240 - i * 137, calls: 38 - i * 4, tg: 12 - i,
+  status: i === 0 ? 'top' : i === 2 ? 'moderation' : i === 6 ? 'archive' : 'active'
+}));
+const STATUS = {
+  top:      ["TOP · 4 kun", 'badge-top'],
+  active:   ["Faol", 'badge-agency'],
+  moderation:["Tekshiruvda", ''],
+  archive:  ["Arxiv", '']
+};
+
+let tab = 'all';
+function drawRows() {
+  const rows = own.filter(r => tab === 'all' || r.status === tab || (tab === 'active' && r.status === 'top'));
+  el('rows').innerHTML = rows.map(r => {
+    const [txt, cls] = STATUS[r.status];
+    return `<tr>
+      <td><a href="listing.html?id=${r.l.id}"><b>${Uyim.titleOf(r.l)}</b></a><br><span class="caption">${Uyim.placeOf(r.l)}</span></td>
+      <td class="num">${Uyim.priceLabel(r.l)}</td>
+      <td class="num muted">${r.views}</td>
+      <td class="num muted">${r.calls}</td>
+      <td class="num" style="color:var(--tg);font-weight:700">${r.tg}</td>
+      <td><span class="badge ${cls}">${txt}</span></td>
+      <td style="text-align:right"><button class="btn btn-cta btn-sm" data-boost="${r.l.id}"><i class="ph-fill ph-rocket-launch"></i>Ko'tarish</button></td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="7" class="caption">Bu bo'limda e'lon yo'q.</td></tr>`;
+}
+el('tabs').addEventListener('click', e => {
+  const b = e.target.closest('[data-tab]'); if (!b) return;
+  tab = b.dataset.tab;
+  el('tabs').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x.dataset.tab === tab));
+  drawRows();
+});
+el('rows').addEventListener('click', e => {
+  if (e.target.closest('[data-boost]')) Uyim.toast("Reklama paketi tanlandi · TOP 7 kun · 89 000 so'm", 'ph-rocket-launch');
+});
+el('boost-all').addEventListener('click', () => Uyim.toast("Paket to'lovi Payme/Click orqali ochildi", 'ph-credit-card'));
+el('tg-btn').addEventListener('click', () => Uyim.toast("12 ta Telegram kanal ulangan · avto-nashr yoqilgan", 'ph-telegram-logo'));
+
+const months = ["Yan","Fev","Mar","Apr","May","Iyn","Iyl","Avg","Sen","Okt","Noy","Dek"];
+const vals = [38,52,44,61,73,58,86,79,64,92,71,88];
+el('chart').innerHTML = vals.map((v, i) =>
+  `<div><span class="bar ${i === 9 ? 'on' : ''}" style="height:${v}%"></span><small>${months[i]}</small></div>`).join('');
+
+const src = [["Telegram", 47, 'var(--tg)'], ["Qidiruv", 28, 'var(--navy)'], ["Xarita", 15, 'var(--emerald)'], ["To'g'ridan-to'g'ri", 10, 'var(--gold)']];
+let off = 0;
+el('donut').innerHTML = src.map(([, v, c]) => {
+  const s = `<circle r="15.9" cx="21" cy="21" fill="transparent" stroke="${c}" stroke-width="7"
+    stroke-dasharray="${v} ${100-v}" stroke-dashoffset="${-off}" pathLength="100"></circle>`;
+  off += v; return s;
+}).join('');
+el('legend').innerHTML = src.map(([n, v, c]) => `<span><i style="background:${c}"></i>${n} — <b>${v}%</b></span>`).join('');
+
+el('leads').innerHTML = [
+  ['ph-telegram-logo', "Telegram: “Chilonzor 3 xona hali bormi?”", "12 daqiqa oldin", 'var(--tg)'],
+  ['ph-phone', "Qo'ng'iroq · +998 93 *** 21 09", "1 soat oldin", 'var(--emerald)'],
+  ['ph-chat-circle-dots', "Chat: Bodomzor yangi bino narxi", "kecha", 'var(--navy)']
+].map(([i, t, time, c]) => `
+  <div class="row" style="gap:11px;align-items:flex-start">
+    <i class="ph-fill ${i}" style="font-size:18px;color:${c};margin-top:2px"></i>
+    <span class="stack" style="gap:2px"><span class="tiny">${t}</span><span class="caption">${time}</span></span>
+  </div>`).join('');
+
+drawRows();
+</script>
+</body>
+</html>

@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>E'lon joylash — Uyim.uz</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/duotone/style.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="assets/css/app.css">
+<style>.leaflet-container{background:var(--surface-2)}</style>
+</head>
+<body>
+
+<div class="wrap sec">
+  <div class="stack" style="gap:8px;margin-bottom:20px">
+    <span class="eyebrow">6 qadam · taxminan 3 daqiqa</span>
+    <h1>E'lon joylash</h1>
+    <p class="muted">Tekshiruvdan so'ng e'lon saytda va ulangan Telegram kanallarida chiqadi.</p>
+  </div>
+
+  <div class="steps" id="steps" style="margin-bottom:20px"></div>
+
+  <div class="grid" style="grid-template-columns:1fr 380px;align-items:start">
+    <div class="card pad stack" style="gap:22px" id="panel"></div>
+
+    <aside class="sticky stack" style="gap:14px">
+      <div class="card pad stack" style="gap:14px">
+        <span class="flabel">Jonli ko'rinish</span>
+        <div id="preview"></div>
+      </div>
+      <div class="card pad-sm stack" style="gap:10px">
+        <span class="flabel">Tayyorlik</span>
+        <div class="stack" style="gap:9px" id="checks"></div>
+      </div>
+      <div class="note"><i class="ph-duotone ph-seal-check"></i>
+        <span>Kadastr hujjati yuklansa e'lon “Tasdiqlangan egasi” belgisini oladi va qidiruvda yuqoriga chiqadi.</span></div>
+    </aside>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/ui.js"></script>
+<script>
+Uyim.mount({ active:'', mobile:'me' });
+const D = UyimData;
+const el = id => document.getElementById(id);
+
+const form = {
+  deal:'sale', type:'Kvartira', district:'chilonzor', mahalla:"Qatortol",
+  rooms:3, area:78, floor:9, floors:12, year:2019, condition:"Evro ta'mir",
+  price:82000, negotiable:true, mortgage:true,
+  features:new Set(["Konditsioner","Mebelli","Parking"]),
+  photos:4, cadastre:false, tg:true, title:"", desc:"",
+  phone:"+998 90 123 45 67", boost:'top'
+};
+const STEPS = ["Bitim turi","Joylashuv","Tafsilotlar","Fotosuratlar","Narx va shartlar","Nashr"];
+let step = 1;
+
+const FEATURES = ["Konditsioner","Mebelli","Parking","Yopiq hovli","Lift","Balkon","Internet · optika","Kir yuvish mashinasi","Oshxona jihozlari","Videokuzatuv"];
+
+function drawSteps() {
+  el('steps').innerHTML = STEPS.map((s, i) => {
+    const n = i + 1;
+    return `<button class="step ${n === step ? 'is-on' : n < step ? 'is-done' : ''}" data-step="${n}">
+      <b>${n < step ? '<i class="ph ph-check"></i>' : n}</b>${s}</button>`;
+  }).join('');
+}
+el('steps').addEventListener('click', e => {
+  const b = e.target.closest('[data-step]'); if (!b) return;
+  step = +b.dataset.step; render();
+});
+
+const field = (label, inner) => `<label class="fgroup"><span class="flabel">${label}</span>${inner}</label>`;
+const input = (id, val, attrs = '') =>
+  `<input id="${id}" value="${val}" ${attrs} style="border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:13px 14px;font-weight:600;min-height:46px">`;
+const nav = () => `
+  <div class="row" style="gap:10px;margin-top:4px">
+    ${step > 1 ? `<button class="btn btn-outline" id="prev"><i class="ph ph-arrow-left"></i>Orqaga</button>` : ''}
+    <button class="btn btn-primary btn-lg" style="flex:1" id="next">
+      ${step === STEPS.length ? "E'lonni chop etish" : `Davom etish · ${step}/${STEPS.length}`}</button>
+  </div>`;
+
+function panel() {
+  if (step === 1) return `
+    ${field("Bitim turi", `<div class="chip-row" id="deal">${D.DEAL_TYPES.map(d =>
+      `<button class="chip" data-v="${d.id}" aria-pressed="${d.id===form.deal}">${d.label}</button>`).join('')}</div>`)}
+    ${field("Mulk turi", `<div class="chip-row" id="ptype">${D.PROP_TYPES.map(t =>
+      `<button class="chip" data-v="${t}" aria-pressed="${t===form.type}">${t}</button>`).join('')}</div>`)}
+    ${field("Kim sifatida joylayapsiz?", `<div class="chip-row" id="who">
+      <button class="chip" data-v="owner" aria-pressed="true"><i class="ph ph-user"></i>Uy egasi</button>
+      <button class="chip" data-v="agency" aria-pressed="false"><i class="ph ph-buildings"></i>Agentlik</button>
+      <button class="chip" data-v="dev" aria-pressed="false"><i class="ph ph-crane-tower"></i>Quruvchi</button></div>`)}
+    ${nav()}`;
+
+  if (step === 2) return `
+    <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px">
+      ${field("Shahar", `<select id="city" class="chip" style="min-height:46px;border-radius:10px">${D.CITIES.map(c =>
+        `<option value="${c.id}">${c.name}</option>`).join('')}</select>`)}
+      ${field("Tuman", `<select id="district" class="chip" style="min-height:46px;border-radius:10px">${D.DISTRICTS.map(d =>
+        `<option value="${d.id}"${d.id===form.district?' selected':''}>${d.name}</option>`).join('')}</select>`)}
+      ${field("Mahalla (MFY)", `<select id="mahalla" class="chip" style="min-height:46px;border-radius:10px"></select>`)}
+      ${field("Ko'cha va uy raqami", input('street', "Qatortol ko'chasi, 14-uy"))}
+    </div>
+    <div class="stack" style="gap:8px">
+      <span class="flabel">Xaritada nuqtani belgilang</span>
+      <div class="minimap" style="height:300px"><div id="pickmap"></div></div>
+      <span class="caption">Aniq manzil e'londa ko'rsatilmaydi — faqat taxminiy doira chiziladi.</span>
+    </div>
+    ${nav()}`;
+
+  if (step === 3) return `
+    <div class="grid" style="grid-template-columns:repeat(4,1fr);gap:14px">
+      ${field("Xonalar", input('rooms', form.rooms, 'type="number" min="0" max="10"'))}
+      ${field("Maydon, m²", input('area', form.area, 'type="number" min="10"'))}
+      ${field("Qavat", input('floor', form.floor, 'type="number" min="0"'))}
+      ${field("Binoda qavat", input('floors', form.floors, 'type="number" min="0"'))}
+    </div>
+    <div class="grid" style="grid-template-columns:1fr 1fr;gap:14px">
+      ${field("Qurilgan yili", input('year', form.year, 'type="number" min="1930" max="2030"'))}
+      ${field("Ta'mir holati", `<select id="cond" class="chip" style="min-height:46px;border-radius:10px">
+        ${["Evro ta'mir","O'rta ta'mir","Ta'mir talab","Oq holat","Qurilish tugagan"].map(c =>
+        `<option${c===form.condition?' selected':''}>${c}</option>`).join('')}</select>`)}
+    </div>
+    ${field("Qulayliklar", `<div class="chip-row" id="feats">${FEATURES.map(f =>
+      `<button class="chip" data-v="${f}" aria-pressed="${form.features.has(f)}">${f}</button>`).join('')}</div>`)}
+    ${field("Sarlavha", input('title', form.title || `${form.rooms} xonali kvartira · ${form.area} m² · ${form.district}`))}
+    <label class="fgroup"><span class="flabel">Tavsif</span>
+      <textarea id="desc" rows="5" style="border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:13px 14px;font-size:14.5px;line-height:1.6"
+        placeholder="Kvartira haqida qisqacha: hovli, qo'shnilar, yaqin obyektlar, nima qoladi…">${form.desc}</textarea>
+      <span class="caption">AI yordamchi tavsifni to'ldirishga yordam beradi.</span></label>
+    <button class="btn btn-outline btn-sm" id="ai-desc" style="align-self:flex-start"><i class="ph ph-sparkle"></i>AI bilan tavsif yozish</button>
+    ${nav()}`;
+
+  if (step === 4) return `
+    <div class="stack" style="gap:9px">
+      <span class="flabel">Fotosuratlar · kamida 4 ta (${form.photos}/10)</span>
+      <div class="uploads" id="uploads">
+        ${Array.from({ length: form.photos }, (_, i) =>
+          `<div>${i === 0 ? '<span class="badge badge-top" style="position:absolute;bottom:8px">ASOSIY</span>' : ''}<i class="ph-duotone ph-image"></i></div>`).join('')}
+        <div class="add" id="add-photo"><span class="stack" style="align-items:center;gap:6px"><i class="ph ph-upload-simple" style="font-size:20px"></i><span class="tiny">Yuklash</span></span></div>
+      </div>
+      <span class="caption">Birinchi foto e'lon muqovasi bo'ladi. Suratni sudrab tartibini o'zgartirish mumkin.</span>
+    </div>
+    <div class="grid" style="grid-template-columns:1fr 1fr;gap:14px">
+      <div class="card pad-sm stack" style="gap:10px">
+        <span class="flabel">360° virtual tur</span>
+        <p class="caption">Panorama fayl yuklang — e'lon 2 barobar ko'proq ko'riladi.</p>
+        <button class="btn btn-outline btn-sm"><i class="ph ph-cube"></i>Tur yuklash</button>
+      </div>
+      <div class="card pad-sm stack" style="gap:10px">
+        <span class="flabel">Kadastr / egalik hujjati</span>
+        <p class="caption">Faqat moderator ko'radi. Yuklansa “Tasdiqlangan egasi” belgisi beriladi.</p>
+        <button class="btn btn-trust btn-sm" id="cad"><i class="ph ph-file-text"></i>Hujjat yuklash</button>
+      </div>
+    </div>
+    ${nav()}`;
+
+  if (step === 5) return `
+    <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px">
+      ${field("Narx, $", input('price', form.price, 'type="number" min="1000" step="500"'))}
+      ${field("So'mda (avto)", `<div class="chip" style="min-height:46px;border-radius:10px;cursor:default" id="uzs">${Uyim.uzs(form.price)}</div>`)}
+    </div>
+    <div class="stack" style="gap:2px">
+      <button class="switch" data-f="negotiable" aria-pressed="${form.negotiable}"><span class="tiny">Narx kelishiladi</span><span class="switch-track"></span></button>
+      <button class="switch" data-f="mortgage" aria-pressed="${form.mortgage}"><span class="tiny">Ipoteka / nasiya mumkin</span><span class="switch-track"></span></button>
+      <button class="switch" data-f="swap" aria-pressed="false"><span class="tiny">Almashtirish (obmen) mumkin</span><span class="switch-track"></span></button>
+    </div>
+    ${field("Aloqa raqami", input('phone', form.phone))}
+    <div class="note"><i class="ph-duotone ph-calculator"></i>
+      <span>15% boshlang'ich va 15 yil muddat bilan taxminiy oylik to'lov: <b id="mono">—</b>. Bu e'londa avtomatik ko'rsatiladi.</span></div>
+    ${nav()}`;
+
+  return `
+    <div class="stack" style="gap:9px">
+      <span class="flabel">Telegram avto-nashr</span>
+      <button class="switch card pad-sm" data-f="tg" aria-pressed="${form.tg}" style="border-radius:12px;text-align:left">
+        <span class="stack" style="gap:3px">
+          <b class="tiny"><i class="ph-fill ph-telegram-logo" style="color:var(--tg)"></i> 12 tuman kanaliga chop etish</b>
+          <span class="caption">Tasdiqdan keyin darhol · @chilonzor_uylar va boshqalar</span>
+        </span><span class="switch-track"></span></button>
+    </div>
+    <div class="stack" style="gap:9px">
+      <span class="flabel">Reklama paketi</span>
+      <div class="grid" style="grid-template-columns:repeat(3,1fr);gap:10px" id="boost">
+        ${[['free',"Oddiy","0 so'm","Standart o'rin"],
+           ['top',"TOP · 7 kun","89 000 so'm","Ro'yxat boshida"],
+           ['hot',"HOT + TG push","165 000 so'm","Belgi va kanal push"]].map(([v,t,p,s]) =>
+        `<button class="card pad-sm stack" data-v="${v}" aria-pressed="${v===form.boost}" style="gap:6px;text-align:left;cursor:pointer;border-color:${v===form.boost?'var(--gold)':'var(--line)'}">
+          <b class="tiny">${t}</b><b class="num" style="font-size:16px">${p}</b><span class="caption">${s}</span></button>`).join('')}
+      </div>
+    </div>
+    <div class="note"><i class="ph-duotone ph-shield-check"></i>
+      <span>E'lon moderatsiyadan o'tadi (odatda 30 daqiqagacha). Kadastr yuklangan e'lonlar birinchi navbatda ko'riladi.</span></div>
+    ${nav()}`;
+}
+
+function preview() {
+  const l = {
+    id:'new', deal:form.deal, type:form.type, price:form.price, rooms:form.rooms, area:form.area,
+    floor:form.floor, floors:form.floors, district:form.district, mahalla:form.mahalla,
+    photos:form.photos, condition:form.condition, agent:'a1',
+    verified:form.cadastre, top:form.boost === 'top', hot:form.boost === 'hot', isNew:false,
+    tg:form.tg, metro:'Novza', metroMin:8, mortgage:form.mortgage, created:'hozir', views:0
+  };
+  el('preview').innerHTML = Uyim.propertyCard(l);
+  el('checks').innerHTML = [
+    [true, "Bitim va mulk turi tanlandi"],
+    [true, "Joylashuv belgilandi"],
+    [form.area > 0, "Tafsilotlar to'ldirildi"],
+    [form.photos >= 4, `Fotosuratlar (${form.photos}/4)`],
+    [form.price > 0, "Narx kiritildi"],
+    [form.cadastre, "Kadastr hujjati yuklandi"]
+  ].map(([ok, t]) => `<span class="row" style="gap:9px;font-size:12.5px;color:${ok ? 'var(--sub)' : 'var(--faint)'}">
+    <i class="ph${ok ? '-fill ph-check-circle' : ' ph-circle'}" style="font-size:16px;color:${ok ? 'var(--emerald)' : 'var(--faint)'}"></i>${t}</span>`).join('');
+}
+
+function render() {
+  drawSteps();
+  el('panel').innerHTML = panel();
+  preview();
+  wire();
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+function wire() {
+  el('next')?.addEventListener('click', () => {
+    if (step === STEPS.length) {
+      Uyim.toast("E'lon moderatsiyaga yuborildi · Telegram kanallariga tasdiqdan keyin chiqadi", 'ph-paper-plane-tilt');
+      setTimeout(() => location.href = 'dashboard-agent.html', 1400);
+      return;
+    }
+    step++; render();
+  });
+  el('prev')?.addEventListener('click', () => { step--; render(); });
+
+  const chipGroup = (id, cb) => el(id)?.addEventListener('click', e => {
+    const b = e.target.closest('[data-v]'); if (!b) return;
+    el(id).querySelectorAll('.chip,[data-v]').forEach(x => x.setAttribute('aria-pressed', x === b));
+    cb(b.dataset.v); preview();
+  });
+  chipGroup('deal', v => form.deal = v);
+  chipGroup('ptype', v => form.type = v);
+  chipGroup('who', () => {});
+  el('boost')?.addEventListener('click', e => {
+    const b = e.target.closest('[data-v]'); if (!b) return;
+    form.boost = b.dataset.v;
+    el('boost').querySelectorAll('[data-v]').forEach(x => {
+      x.setAttribute('aria-pressed', x === b);
+      x.style.borderColor = x === b ? 'var(--gold)' : 'var(--line)';
+    });
+    preview();
+  });
+
+  el('feats')?.addEventListener('click', e => {
+    const b = e.target.closest('[data-v]'); if (!b) return;
+    const v = b.dataset.v;
+    form.features.has(v) ? form.features.delete(v) : form.features.add(v);
+    b.setAttribute('aria-pressed', form.features.has(v));
+  });
+
+  document.querySelectorAll('#panel [data-f]').forEach(b => b.addEventListener('click', () => {
+    const k = b.dataset.f;
+    form[k] = b.getAttribute('aria-pressed') !== 'true';
+    b.setAttribute('aria-pressed', form[k]);
+    preview();
+  }));
+
+  ['rooms','area','floor','floors','year','price'].forEach(k => el(k)?.addEventListener('input', e => {
+    form[k] = +e.target.value || 0;
+    if (k === 'price') {
+      el('uzs') && (el('uzs').textContent = Uyim.uzs(form.price));
+      el('mono') && (el('mono').textContent = Uyim.usd(Uyim.mortgage({price:form.price,downPct:15,years:15,rate:17}).monthly) + '/oy');
+    }
+    preview();
+  }));
+  el('cond')?.addEventListener('change', e => { form.condition = e.target.value; preview(); });
+  el('desc')?.addEventListener('input', e => form.desc = e.target.value);
+  el('title')?.addEventListener('input', e => form.title = e.target.value);
+  el('phone')?.addEventListener('input', e => form.phone = e.target.value);
+  el('mono') && (el('mono').textContent = Uyim.usd(Uyim.mortgage({price:form.price,downPct:15,years:15,rate:17}).monthly) + '/oy');
+
+  el('ai-desc')?.addEventListener('click', () => {
+    el('desc').value = form.desc =
+      `${form.mahalla} mahallasida, tinch hovlida joylashgan ${form.rooms} xonali kvartira. Umumiy maydoni ${form.area} m², ${form.floor}/${form.floors} qavat, ${form.condition.toLowerCase()}. Oshxona jihozlangan, ${[...form.features].slice(0,3).join(', ').toLowerCase()} qoladi. Metro va maktab yaqin, hujjatlar tayyor.`;
+    Uyim.toast("AI tavsif yaratdi — tahrirlashingiz mumkin", 'ph-sparkle');
+  });
+  el('add-photo')?.addEventListener('click', () => {
+    if (form.photos >= 10) return Uyim.toast("Eng ko'pi 10 ta foto", 'ph-info');
+    form.photos++; render();
+  });
+  el('cad')?.addEventListener('click', () => {
+    form.cadastre = true;
+    Uyim.toast("Kadastr yuklandi — moderator tekshiradi", 'ph-seal-check');
+    preview();
+  });
+
+  const dSel = el('district'), mSel = el('mahalla');
+  if (dSel && mSel) {
+    const fillM = () => {
+      const d = D.DISTRICTS.find(x => x.id === dSel.value);
+      mSel.innerHTML = d.mahallas.map(m => `<option${m===form.mahalla?' selected':''}>${m}</option>`).join('');
+      form.district = dSel.value; form.mahalla = mSel.value;
+    };
+    fillM();
+    dSel.addEventListener('change', () => { fillM(); preview(); pick && pick.setView(D.DISTRICTS.find(x => x.id === dSel.value).center, 14); });
+    mSel.addEventListener('change', () => { form.mahalla = mSel.value; preview(); });
+  }
+
+  let pick;
+  if (el('pickmap')) {
+    const d = D.DISTRICTS.find(x => x.id === form.district);
+    pick = Uyim.initMap(el('pickmap'), { center:d.center, zoom:14 });
+    if (pick) {
+      let mk = L.marker(d.center, { draggable:true,
+        icon:L.divIcon({ html:'<span class="pin is-active"><i class="ph-fill ph-map-pin"></i> Mulk shu yerda</span>', className:'', iconSize:null }) }).addTo(pick);
+      pick.on('click', e => mk.setLatLng(e.latlng));
+    }
+  }
+}
+
+render();
+</script>
+</body>
+</html>

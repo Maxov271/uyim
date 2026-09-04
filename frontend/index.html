@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Uyim.uz — O'zbekiston bo'ylab kvartira, uy va yer uchastkalari</title>
+<meta name="description" content="Mahalla darajasidagi qidiruv, split-screen xarita, mahalliy banklar ipoteka kalkulyatori va Telegram integratsiyasi.">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/duotone/style.css">
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+
+<section class="hero">
+  <div class="wrap">
+    <span class="eyebrow">Toshkent · Samarqand · Buxoro · 12 shahar</span>
+    <h1 style="margin-top:12px">Mahalladan tanlang, ipotekasini shu yerda hisoblang.</h1>
+    <p class="hero-sub">Tasdiqlangan e'lonlar, narx ko'rsatilgan interaktiv xarita va O'zbekiston banklari shartlariga moslashgan kalkulyator — hammasi bitta joyda.</p>
+
+    <form class="searchbox" id="hero-search" autocomplete="off">
+      <div class="tabs" id="deal-tabs" role="group" aria-label="Bitim turi"></div>
+      <div class="search-row">
+        <label class="field" style="flex:2">
+          <span class="field-label">Shahar · tuman · mahalla</span>
+          <i class="ph ph-map-pin"></i>
+          <input id="q" placeholder="Masalan: Chilonzor yoki Qatortol mahallasi" aria-label="Joylashuv">
+          <div class="ac hide" id="ac"></div>
+        </label>
+        <label class="field">
+          <span class="field-label">Mulk turi</span>
+          <i class="ph ph-buildings"></i>
+          <select id="ptype" aria-label="Mulk turi"></select>
+        </label>
+        <label class="field" style="max-width:210px">
+          <span class="field-label">Narx, ming $ gacha</span>
+          <i class="ph ph-currency-circle-dollar"></i>
+          <input id="pmax" type="number" value="120" min="5" step="5" aria-label="Maksimal narx">
+        </label>
+        <button class="btn btn-cta btn-lg" type="submit" style="min-width:150px"><i class="ph ph-magnifying-glass"></i>Qidirish</button>
+      </div>
+      <div class="chip-scroll" id="quick" style="padding:10px 4px 6px"></div>
+    </form>
+
+    <div class="row" style="gap:26px;margin-top:22px;flex-wrap:wrap">
+      <span class="tiny muted"><b class="num" style="color:var(--ink)">48 210</b> faol e'lon</span>
+      <span class="tiny muted"><b class="num" style="color:var(--ink)">11 400</b> tasdiqlangan egasi</span>
+      <span class="tiny muted"><b class="num" style="color:var(--ink)">320</b> ishonchli agentlik</span>
+      <span class="tiny muted"><b class="num" style="color:var(--ink)">12</b> Telegram kanal</span>
+    </div>
+  </div>
+</section>
+
+<!-- AI qidiruv (3-bosqich) -->
+<section class="wrap" style="padding-bottom:8px">
+  <div class="card pad" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+    <span class="badge badge-agency"><i class="ph-fill ph-sparkle"></i>AI QIDIRUV · BETA</span>
+    <input class="tiny" id="ai-q" style="flex:1;min-width:240px;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:13px 14px;font-size:14px"
+      placeholder="“Yunusobodda, metro yaqinida, 2 xonali, 70 ming dollargacha, ipoteka bilan”">
+    <button class="btn btn-primary" id="ai-go"><i class="ph ph-arrow-right"></i>Tabiiy tilda qidirish</button>
+  </div>
+</section>
+
+<!-- TOP e'lonlar -->
+<section class="sec">
+  <div class="wrap sec-head">
+    <div>
+      <span class="eyebrow">Tanlangan</span>
+      <h2 style="margin-top:8px">TOP e'lonlar</h2>
+    </div>
+    <a class="btn btn-outline btn-sm" href="search.html">Barchasi <i class="ph ph-arrow-right"></i></a>
+  </div>
+  <div class="rail" id="rail-top"></div>
+</section>
+
+<!-- Tuman statistikasi -->
+<section class="sec" style="padding-top:8px">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <span class="eyebrow">Bozor ma'lumoti</span>
+        <h2 style="margin-top:8px">Toshkent tumanlari bo'yicha narx</h2>
+      </div>
+      <span class="caption">1 m² o'rtacha narxi · oxirgi 30 kun</span>
+    </div>
+    <div class="card" style="overflow:hidden">
+      <table class="table">
+        <thead><tr><th>Tuman</th><th>1 m² narxi</th><th>3 oylik o'zgarish</th><th>Faol e'lon</th><th></th></tr></thead>
+        <tbody id="stats-body"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- Yangi binolar -->
+<section class="sec" style="padding-top:8px">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <span class="eyebrow">Birlamchi bozor</span>
+        <h2 style="margin-top:8px">Yangi binolar va quruvchilar</h2>
+      </div>
+      <a class="btn btn-outline btn-sm" href="new-buildings.html">Loyihalar <i class="ph ph-arrow-right"></i></a>
+    </div>
+    <div class="logo-strip" id="devs"></div>
+  </div>
+</section>
+
+<!-- Bank + Telegram bannerlari -->
+<section class="sec" style="padding-top:8px">
+  <div class="wrap grid" style="grid-template-columns:1.4fr 1fr">
+    <div class="banner">
+      <div class="stack" style="gap:10px">
+        <span class="eyebrow" style="color:#8FE3C4">Hamkor banklar</span>
+        <h3>Ipoteka 15% boshlang'ich to'lov bilan</h3>
+        <p>Ipoteka Bank, Xalq Banki, QQB va subsidiya dasturi shartlarini yonma-yon solishtiring — oylik to'lov darhol hisoblanadi.</p>
+      </div>
+      <a class="btn btn-cta btn-lg" href="calculator.html"><i class="ph ph-calculator"></i>Kalkulyator</a>
+    </div>
+    <div class="card pad" style="display:flex;flex-direction:column;gap:14px;justify-content:center">
+      <span class="badge badge-tg"><i class="ph-fill ph-telegram-logo"></i>TELEGRAM-NATIVE</span>
+      <h3>Yangi e'lonlar botda</h3>
+      <p class="tiny muted">Qidiruvingizni saqlang — mos e'lon chiqqanda @uyim_bot darhol xabar beradi. E'lonlaringiz 12 tuman kanaliga avtomatik chop etiladi.</p>
+      <a class="btn btn-tg btn-block" href="#"><i class="ph-fill ph-telegram-logo"></i>Botni ochish</a>
+    </div>
+  </div>
+</section>
+
+<!-- Ishonch bloki -->
+<section class="sec" style="padding-top:0">
+  <div class="wrap grid g3">
+    <div class="card pad stack" style="gap:10px">
+      <i class="ph-duotone ph-seal-check" style="font-size:26px;color:var(--blue)"></i>
+      <h3>Tasdiqlangan e'lonlar</h3>
+      <p class="tiny muted">Kadastr va telefon raqami tekshiriladi. Tasdiqlangan e'lonlar qidiruvda yuqoriga chiqadi.</p>
+    </div>
+    <div class="card pad stack" style="gap:10px">
+      <i class="ph-duotone ph-map-trifold" style="font-size:26px;color:var(--emerald)"></i>
+      <h3>Mahalla darajasidagi xarita</h3>
+      <p class="tiny muted">Radius chizib qidirish, narxli pinlar va klasterlash — MFY aniqligida.</p>
+    </div>
+    <div class="card pad stack" style="gap:10px">
+      <i class="ph-duotone ph-scales" style="font-size:26px;color:var(--gold)"></i>
+      <h3>2–4 mulkni taqqoslash</h3>
+      <p class="tiny muted">Narx, m², qavat, ipoteka to'lovi — farqlar jadvalda ajratib ko'rsatiladi.</p>
+    </div>
+  </div>
+</section>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/ui.js"></script>
+<script>
+Uyim.mount({ active:'sale', mobile:'home' });
+const D = UyimData;
+let deal = 'sale';
+
+/* bitim turi tablari */
+const tabs = document.getElementById('deal-tabs');
+tabs.innerHTML = D.DEAL_TYPES.map(d =>
+  `<button type="button" data-deal="${d.id}" aria-pressed="${d.id===deal}">${d.label}</button>`).join('');
+tabs.addEventListener('click', e => {
+  const b = e.target.closest('[data-deal]'); if (!b) return;
+  deal = b.dataset.deal;
+  tabs.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x.dataset.deal === deal));
+});
+
+document.getElementById('ptype').innerHTML =
+  ['<option value="">Barchasi</option>'].concat(D.PROP_TYPES.map(t => `<option>${t}</option>`)).join('');
+
+/* tezkor filtrlar */
+const QUICK = [
+  ['new',"Yangi bino",'ph-buildings'], ['mortgage',"Ipoteka mavjud",'ph-bank'],
+  ['metro',"Metro yaqinida",'ph-train-simple'], ['photo',"Foto bilan",'ph-camera'],
+  ['verified',"Tasdiqlangan",'ph-seal-check'], ['owner',"Egasidan",'ph-user']
+];
+const quick = new Set(['verified']);
+const qEl = document.getElementById('quick');
+const drawQuick = () => qEl.innerHTML = QUICK.map(([k,l,i]) =>
+  `<button type="button" class="chip" data-q="${k}" aria-pressed="${quick.has(k)}"><i class="ph ${i}"></i>${l}</button>`).join('');
+drawQuick();
+qEl.addEventListener('click', e => {
+  const b = e.target.closest('[data-q]'); if (!b) return;
+  quick.has(b.dataset.q) ? quick.delete(b.dataset.q) : quick.add(b.dataset.q);
+  drawQuick();
+});
+
+/* autocomplete: shahar → tuman → mahalla */
+const q = document.getElementById('q'), ac = document.getElementById('ac');
+function suggest(v) {
+  const s = v.trim().toLowerCase();
+  const hit = [];
+  D.CITIES.forEach(c => { if (!s || c.name.toLowerCase().includes(s)) hit.push({ n:c.name, k:'Shahar', v:c.id, t:'city' }); });
+  D.DISTRICTS.forEach(d => {
+    if (!s || d.name.toLowerCase().includes(s)) hit.push({ n:d.name, k:'Tuman', v:d.id, t:'district' });
+    d.mahallas.forEach(m => { if (s && m.toLowerCase().includes(s)) hit.push({ n:m + ' mahallasi', k:d.name, v:d.id, t:'mahalla' }); });
+  });
+  return hit.slice(0, 9);
+}
+function openAc(v) {
+  const items = suggest(v);
+  ac.innerHTML = `<div class="ac-group">Joylashuv taklifi</div>` + items.map(h =>
+    `<button type="button" data-v="${h.v}" data-n="${h.n}">
+       <i class="ph ${h.t==='city'?'ph-buildings':h.t==='district'?'ph-map-trifold':'ph-map-pin'}" style="color:var(--emerald)"></i>
+       ${h.n}<span class="ac-kind">${h.k}</span></button>`).join('');
+  ac.classList.toggle('hide', !items.length);
+}
+q.addEventListener('focus', () => openAc(q.value));
+q.addEventListener('input', () => openAc(q.value));
+ac.addEventListener('click', e => {
+  const b = e.target.closest('[data-v]'); if (!b) return;
+  q.value = b.dataset.n; q.dataset.district = b.dataset.v; ac.classList.add('hide');
+});
+document.addEventListener('click', e => { if (!e.target.closest('#hero-search')) ac.classList.add('hide'); });
+
+document.getElementById('hero-search').addEventListener('submit', e => {
+  e.preventDefault();
+  const p = new URLSearchParams({ deal, pmax:document.getElementById('pmax').value });
+  if (q.dataset.district) p.set('district', q.dataset.district);
+  if (quick.size) p.set('quick', [...quick].join(','));
+  location.href = 'search.html?' + p;
+});
+
+document.getElementById('ai-go').addEventListener('click', () => {
+  const t = document.getElementById('ai-q').value.trim();
+  if (!t) { Uyim.toast("Nima izlayotganingizni yozing", 'ph-info'); return; }
+  Uyim.toast("AI qidiruv 3-bosqichda ulanadi — filtrlarga aylantirildi");
+  const d = D.DISTRICTS.find(x => t.toLowerCase().includes(x.name.toLowerCase()));
+  const p = new URLSearchParams({ deal:'sale' });
+  if (d) p.set('district', d.id);
+  setTimeout(() => location.href = 'search.html?' + p, 700);
+});
+
+/* TOP karusel */
+const topList = D.LISTINGS.filter(l => l.top || l.hot).concat(D.LISTINGS.filter(l => !l.top && !l.hot)).slice(0, 8);
+document.getElementById('rail-top').innerHTML = topList.map(l => Uyim.propertyCard(l)).join('');
+
+/* tuman statistikasi */
+document.getElementById('stats-body').innerHTML = D.DISTRICT_STATS.map(s => `
+<tr>
+  <td><b>${s.district}</b></td>
+  <td class="num">${Uyim.usd(s.ppm)}</td>
+  <td class="${s.delta >= 0 ? 'trend-up' : 'trend-down'}">
+    <i class="ph-fill ${s.delta >= 0 ? 'ph-trend-up' : 'ph-trend-down'}"></i> ${s.delta > 0 ? '+' : ''}${s.delta}%
+  </td>
+  <td class="num muted">${Uyim.nf.format(s.supply)}</td>
+  <td style="text-align:right"><a class="btn btn-ghost btn-sm" href="search.html?district=${D.DISTRICTS.find(d=>d.name===s.district).id}">Ko'rish <i class="ph ph-arrow-right"></i></a></td>
+</tr>`).join('');
+
+/* quruvchilar */
+document.getElementById('devs').innerHTML = D.DEVELOPERS.map(d =>
+  `<div><span>${d.name}<br><span class="caption">${d.projects} loyiha · ${d.city}</span></span></div>`).join('');
+</script>
+</body>
+</html>

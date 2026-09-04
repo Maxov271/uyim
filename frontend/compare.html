@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Taqqoslash — Uyim.uz</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/duotone/style.css">
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+
+<div class="wrap sec">
+  <div class="spread" style="align-items:flex-end;margin-bottom:20px">
+    <div class="stack" style="gap:6px">
+      <span class="eyebrow">Eng ko'pi 4 ta obyekt</span>
+      <h1>Taqqoslash</h1>
+    </div>
+    <div class="row" style="gap:8px">
+      <button class="btn btn-outline btn-sm" id="only-diff"><i class="ph ph-funnel"></i>Faqat farqlar</button>
+      <a class="btn btn-primary btn-sm" href="search.html"><i class="ph ph-plus"></i>Obyekt qo'shish</a>
+    </div>
+  </div>
+
+  <div class="card" style="overflow:hidden" id="wrap"></div>
+
+  <section class="sec">
+    <div class="sec-head"><h2>Taqqoslashga qo'shish uchun tavsiya</h2></div>
+    <div class="grid g3" id="suggest"></div>
+  </section>
+</div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/ui.js"></script>
+<script>
+Uyim.mount({ active:'compare', mobile:'fav' });
+const D = UyimData;
+let onlyDiff = false;
+
+const ROWS = [
+  ["Narx", l => Uyim.priceLabel(l), l => l.price, 'min'],
+  ["1 m² narxi", l => Uyim.ppm(l), l => l.price / l.area, 'min'],
+  ["Joylashuv", l => Uyim.placeOf(l), l => l.district],
+  ["Mulk turi", l => l.type, l => l.type],
+  ["Xonalar", l => (l.rooms || '—') + ' xona', l => l.rooms, 'max'],
+  ["Maydon", l => l.area + ' m²', l => l.area, 'max'],
+  ["Qavat", l => l.floors ? `${l.floor} / ${l.floors}` : '—', l => l.floor],
+  ["Qurilgan yili", l => l.year, l => l.year, 'max'],
+  ["Ta'mir holati", l => l.condition, l => l.condition],
+  ["Metrogacha", l => l.metro ? `${l.metro} · ${l.metroMin} daq` : '—', l => l.metroMin, 'min'],
+  ["Ipoteka (15% · 15 yil)", l => l.mortgage ? Uyim.usd(Uyim.mortgage({price:l.price,downPct:15,years:15,rate:17}).monthly) + '/oy' : "Yo'q", l => l.mortgage ? l.price : 1e12, 'min'],
+  ["Boshlang'ich to'lov", l => l.mortgage ? Uyim.usd(l.price * .15) : '—', l => l.price, 'min'],
+  ["Tasdiqlangan", l => l.verified ? 'Ha' : "Yo'q", l => l.verified ? 1 : 0, 'max'],
+  ["Telegram kanalda", l => l.tg ? 'Ha' : "Yo'q", l => l.tg ? 1 : 0, 'max'],
+  ["Qulayliklar", l => l.features.slice(0, 3).join(', '), l => l.features.length, 'max']
+];
+
+function render() {
+  const ls = Uyim.state.compare.map(Uyim.byId).filter(Boolean);
+  if (!ls.length) {
+    document.getElementById('wrap').innerHTML =
+      `<div class="pad note"><i class="ph-duotone ph-scales"></i><span>Taqqoslash bo'sh. Qidiruvda tarozi tugmasini bosib 2–4 ta obyekt qo'shing.</span></div>`;
+  } else {
+    const rows = ROWS.filter(([, fmt, key]) => !onlyDiff || new Set(ls.map(l => String(key(l)))).size > 1);
+    document.getElementById('wrap').innerHTML = `
+    <div class="cmp"><table class="table" style="min-width:${240 + ls.length * 230}px">
+      <thead><tr><th style="width:210px">Ko'rsatkich</th>
+      ${ls.map(l => `<th style="min-width:220px">
+        <div class="stack" style="gap:8px;padding:6px 0">
+          <div style="height:96px;border-radius:10px;background:var(--ph);display:grid;place-items:center;color:var(--faint)"><i class="ph-duotone ph-image" style="font-size:20px"></i></div>
+          <a href="listing.html?id=${l.id}" style="font-size:13.5px;font-weight:700;text-transform:none;letter-spacing:0">${Uyim.titleOf(l)}</a>
+          <div class="row" style="gap:6px">${Uyim.trustBadges(l)}</div>
+          <button class="btn btn-outline btn-sm" data-compare="${l.id}"><i class="ph ph-x"></i>Olib tashlash</button>
+        </div></th>`).join('')}</tr></thead>
+      <tbody>${rows.map(([label, fmt, key, best]) => {
+        const vals = ls.map(key);
+        const b = best === 'min' ? Math.min(...vals) : best === 'max' ? Math.max(...vals) : null;
+        return `<tr><td class="muted">${label}</td>${ls.map((l, i) =>
+          `<td class="${b !== null && vals[i] === b && new Set(vals).size > 1 ? 'best' : ''}">${fmt(l)}</td>`).join('')}</tr>`;
+      }).join('')}
+      <tr><td></td>${ls.map(l => `<td><button class="btn btn-primary btn-sm" data-contact="${l.id}"><i class="ph-fill ph-phone"></i>Aloqa</button></td>`).join('')}</tr>
+      </tbody></table></div>`;
+  }
+
+  const ids = new Set(Uyim.state.compare);
+  document.getElementById('suggest').innerHTML = D.LISTINGS
+    .filter(l => !ids.has(l.id) && (l.deal === 'sale' || l.deal === 'new')).slice(0, 3)
+    .map(l => Uyim.propertyCard(l)).join('');
+}
+
+document.getElementById('only-diff').addEventListener('click', e => {
+  onlyDiff = !onlyDiff;
+  e.currentTarget.classList.toggle('btn-primary', onlyDiff);
+  e.currentTarget.innerHTML = onlyDiff ? '<i class="ph ph-funnel-simple"></i>Barcha qatorlar' : '<i class="ph ph-funnel"></i>Faqat farqlar';
+  render();
+});
+document.addEventListener('uyim:compare', render);
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Xaridor kabineti — Uyim.uz</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/duotone/style.css">
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+
+<div class="wrap sec">
+  <div class="spread" style="align-items:flex-end;margin-bottom:22px">
+    <div class="stack" style="gap:6px">
+      <span class="eyebrow">Xaridor kabineti</span>
+      <h1>Dilshod Karimov</h1>
+      <span class="caption">+998 90 *** 45 67 · Toshkent · ro'yxatdan o'tgan 2025</span>
+    </div>
+    <div class="row" style="gap:8px">
+      <a class="btn btn-outline btn-sm" href="compare.html"><i class="ph ph-scales"></i>Taqqoslash</a>
+      <a class="btn btn-primary btn-sm" href="search.html"><i class="ph ph-magnifying-glass"></i>Yangi qidiruv</a>
+    </div>
+  </div>
+
+  <div class="kpis" style="margin-bottom:22px">
+    <div><span class="caption">Saqlangan e'lonlar</span><b class="num" id="k-fav">—</b><span class="trend-up">2 tasida narx tushdi</span></div>
+    <div><span class="caption">Saqlangan qidiruvlar</span><b class="num">3</b><span class="caption">16 yangi mos e'lon</span></div>
+    <div><span class="caption">Taqqoslashda</span><b class="num" id="k-cmp">—</b><span class="caption">eng ko'pi 4 ta</span></div>
+    <div><span class="caption">Ko'rilgan e'lonlar</span><b class="num">64</b><span class="caption">oxirgi 30 kun</span></div>
+  </div>
+
+  <div class="grid" style="grid-template-columns:1fr 380px;align-items:start">
+    <div class="stack" style="gap:20px">
+      <section class="card pad stack" style="gap:14px">
+        <div class="spread"><h3>Saqlangan e'lonlar</h3><span class="caption">Narx o'zgarishi kuzatilmoqda</span></div>
+        <div class="stack" style="gap:10px" id="favs"></div>
+        <div class="note hide" id="favs-empty"><i class="ph-duotone ph-heart"></i>
+          <span>Hozircha saqlangan e'lon yo'q — qidiruvda yurakcha tugmasini bosing.</span></div>
+      </section>
+
+      <section class="card pad stack" style="gap:14px">
+        <div class="spread"><h3>Taqqoslash jadvali</h3>
+          <a class="btn btn-ghost btn-sm" href="compare.html">To'liq ko'rinish <i class="ph ph-arrow-right"></i></a></div>
+        <div class="cmp" id="cmp"></div>
+      </section>
+
+      <section class="card pad stack" style="gap:14px">
+        <div class="spread"><h3>Ko'rish uchun uchrashuvlar</h3><span class="caption">Agent bilan kelishilgan</span></div>
+        <div class="stack" style="gap:10px">
+          <div class="pcard-mini card" style="border-radius:12px">
+            <div class="thumb"><i class="ph-duotone ph-calendar-check"></i></div>
+            <div class="stack" style="gap:3px;flex:1">
+              <b class="tiny">Bugun · 17:30 — Qatortol, 3 xonali</b>
+              <span class="caption">Golden House Agency · +998 90 123 45 67</span>
+            </div>
+            <span class="badge badge-agency">TASDIQLANGAN</span>
+          </div>
+          <div class="pcard-mini card" style="border-radius:12px">
+            <div class="thumb"><i class="ph-duotone ph-calendar-dots"></i></div>
+            <div class="stack" style="gap:3px;flex:1">
+              <b class="tiny">Shanba · 11:00 — Bodomzor, yangi bino</b>
+              <span class="caption">Makon Realty · so'rov yuborilgan</span>
+            </div>
+            <span class="badge">KUTILMOQDA</span>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <aside class="stack" style="gap:16px">
+      <section class="card pad stack" style="gap:14px">
+        <div class="spread"><h3 style="font-size:16px">Saqlangan qidiruvlar</h3>
+          <span class="badge badge-tg"><i class="ph-fill ph-telegram-logo"></i>BOTGA ULANGAN</span></div>
+        <div class="stack" style="gap:10px" id="saved"></div>
+        <p class="caption">Yoqilgan qidiruvlar bo'yicha yangi e'lonlar Telegram bot va push orqali keladi.</p>
+      </section>
+
+      <section class="card pad stack" style="gap:12px">
+        <h3 style="font-size:16px">Xabarnomalar</h3>
+        <div class="stack" style="gap:12px" id="notifs"></div>
+      </section>
+
+      <section class="card pad stack" style="gap:12px">
+        <h3 style="font-size:16px">Ipoteka imkoniyatingiz</h3>
+        <p class="caption">Kiritilgan daromad asosida taxminiy byudjet.</p>
+        <div class="spread"><span class="tiny muted">Oylik daromad</span><b class="num tiny">$1 400</b></div>
+        <div class="spread"><span class="tiny muted">Mumkin bo'lgan oylik to'lov</span><b class="num tiny">$700</b></div>
+        <div class="spread"><span class="tiny muted">Taxminiy byudjet</span><b class="num" style="font-size:18px">$96 000</b></div>
+        <a class="btn btn-cta btn-block" href="calculator.html"><i class="ph ph-calculator"></i>Kalkulyatorda ochish</a>
+      </section>
+    </aside>
+  </div>
+</div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/ui.js"></script>
+<script>
+Uyim.mount({ active:'', mobile:'fav' });
+const D = UyimData;
+const el = id => document.getElementById(id);
+
+function drawFavs() {
+  const ls = Uyim.state.fav.map(Uyim.byId).filter(Boolean);
+  el('k-fav').textContent = ls.length;
+  el('favs-empty').classList.toggle('hide', !!ls.length);
+  el('favs').innerHTML = ls.map(l => `
+    <div class="pcard pcard-mini card" data-id="${l.id}" style="border-radius:12px">
+      <div class="thumb"><i class="ph-duotone ph-image"></i></div>
+      <div class="stack" style="gap:4px;flex:1">
+        <b class="num" style="font-size:17px">${Uyim.priceLabel(l)}</b>
+        <span class="tiny">${Uyim.titleOf(l)}${l.floors ? ` · ${l.floor}/${l.floors}` : ''}</span>
+        <span class="caption">${Uyim.placeOf(l)}</span>
+      </div>
+      <div class="stack" style="gap:6px;align-items:flex-end">
+        ${Uyim.trustBadges(l)}
+        <div class="row" style="gap:6px">
+          <button class="btn btn-icon btn-sm" data-compare="${l.id}" title="Taqqoslash"><i class="ph ph-scales"></i></button>
+          <button class="btn btn-icon btn-sm" data-fav="${l.id}" aria-pressed="true" style="color:var(--hot)"><i class="ph-fill ph-heart"></i></button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function drawCmp() {
+  const ls = Uyim.state.compare.map(Uyim.byId).filter(Boolean);
+  el('k-cmp').textContent = ls.length;
+  if (!ls.length) { el('cmp').innerHTML = `<p class="caption">Taqqoslash uchun e'lon tanlanmagan.</p>`; return; }
+  const rows = [
+    ["Narx", l => Uyim.priceLabel(l), 'min'],
+    ["Joylashuv", l => Uyim.placeOf(l)],
+    ["Xonalar", l => (l.rooms || '—') + ' xona'],
+    ["Maydon", l => l.area + ' m²', 'max'],
+    ["Qavat", l => l.floors ? `${l.floor}/${l.floors}` : '—'],
+    ["1 m² narxi", l => Uyim.ppm(l), 'min'],
+    ["Holati", l => l.condition],
+    ["Ipoteka (15% · 15 yil)", l => l.mortgage ? Uyim.usd(Uyim.mortgage({price:l.price,downPct:15,years:15,rate:17}).monthly) + '/oy' : '—', 'min']
+  ];
+  const val = { min:{}, max:{} };
+  val.min.price = Math.min(...ls.map(l => l.price));
+  val.max.area = Math.max(...ls.map(l => l.area));
+  val.min.ppm = Math.min(...ls.map(l => l.price / l.area));
+  el('cmp').innerHTML = `<table class="table"><thead><tr><th>Ko'rsatkich</th>
+    ${ls.map(l => `<th>${Uyim.titleOf(l)}</th>`).join('')}</tr></thead><tbody>
+    ${rows.map(([k, fn, best]) => `<tr><td class="muted">${k}</td>${ls.map(l => {
+      const isBest = best && ((k === 'Narx' && l.price === val.min.price) ||
+        (k === 'Maydon' && l.area === val.max.area) ||
+        (k === "1 m² narxi" && l.price / l.area === val.min.ppm));
+      return `<td class="${isBest ? 'best' : ''}">${fn(l)}</td>`;
+    }).join('')}</tr>`).join('')}
+    <tr><td></td>${ls.map(l => `<td><button class="btn btn-outline btn-sm" data-compare="${l.id}"><i class="ph ph-x"></i>Olib tashlash</button></td>`).join('')}</tr>
+    </tbody></table>`;
+}
+
+el('saved').innerHTML = D.SAVED_SEARCHES.map(s => `
+  <button class="switch card pad-sm" data-saved="${s.id}" aria-pressed="${s.on}" style="border-radius:12px;text-align:left">
+    <span class="stack" style="gap:3px">
+      <b class="tiny">${s.title}</b><span class="caption">${s.meta}</span>
+    </span><span class="switch-track"></span>
+  </button>`).join('');
+el('saved').addEventListener('click', e => {
+  const b = e.target.closest('[data-saved]'); if (!b) return;
+  const on = b.getAttribute('aria-pressed') !== 'true';
+  b.setAttribute('aria-pressed', on);
+  Uyim.toast(on ? "Xabarnoma yoqildi — Telegram botga ulandi" : "Xabarnoma o'chirildi", on ? 'ph-bell-ringing' : 'ph-bell-slash');
+});
+
+el('notifs').innerHTML = D.NOTIFICATIONS.map(n => `
+  <div class="row" style="gap:11px;align-items:flex-start">
+    <i class="ph-duotone ${n.icon}" style="font-size:19px;color:var(--emerald);margin-top:2px"></i>
+    <span class="stack" style="gap:2px"><span class="tiny">${n.text}</span><span class="caption">${n.time}</span></span>
+  </div>`).join('');
+
+drawFavs(); drawCmp();
+document.addEventListener('uyim:fav', () => { drawFavs(); });
+document.addEventListener('uyim:compare', () => { drawCmp(); });
+</script>
+</body>
+</html>
