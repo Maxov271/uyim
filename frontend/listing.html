@@ -124,6 +124,7 @@
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="assets/js/api.js"></script>
 <script src="assets/js/data.js"></script>
 <script src="assets/js/ui.js"></script>
 <script>
@@ -200,7 +201,7 @@ paint();
 favBtn.addEventListener('click', () => { Uyim.toggleFav(l.id); paint(); });
 cmpBtn.addEventListener('click', () => { Uyim.toggleCompare(l.id); paint(); });
 
-document.getElementById('lid').textContent = l.id.toUpperCase().replace('L', 'UY-');
+document.getElementById('lid').textContent = 'UY-' + l.id;
 document.getElementById('created').textContent = l.created;
 document.getElementById('views').textContent = l.views;
 

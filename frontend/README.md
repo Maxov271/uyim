@@ -1,15 +1,28 @@
 # Uyim.uz — Frontend
 
-O'zbekiston ko'chmas mulk platformasi. Bu repozitoriy **to'liq tayyor frontend** (statik HTML/CSS/JS, build talab qilmaydi).
-Backend va mobil ilova keyingi bosqichda Claude Code orqali yoziladi — qarang: `CLAUDE_CODE_PROMPT.md`.
+O'zbekiston ko'chmas mulk platformasi. Statik HTML/CSS/JS (build talab qilmaydi), endi
+**real Django API bilan ulangan** — qarang: [`../backend`](../backend). Mobil ilova rejasi:
+[`../docs/MOBILE_APP_PLAN.md`](../docs/MOBILE_APP_PLAN.md).
 
 ## Ishga tushirish
+
+Avval backend kerak (u yo'q bo'lsa sahifalar bo'sh ma'lumot bilan ochiladi — konsolda xato
+ko'rinadi):
+
+```bash
+cd ../backend && source .venv/bin/activate && python manage.py runserver   # http://localhost:8000
+```
+
+Keyin frontendni alohida serverda:
 
 ```bash
 cd frontend
 python3 -m http.server 8080      # yoki: npx serve .
 # http://localhost:8080
 ```
+
+Backend boshqa manzilda bo'lsa, `assets/js/api.js` yuklanishidan oldin o'zgartiring:
+`<script>window.UYIM_API_BASE = 'https://api.uyim.uz/api';</script>`.
 
 Hech qanday npm/build kerak emas. Tashqi CDN: Google Fonts (Plus Jakarta Sans), Phosphor Icons, Leaflet + MarkerCluster (OpenStreetMap/Carto — API kalit talab qilmaydi).
 
@@ -48,6 +61,12 @@ frontend/
 
 `uyim.theme`, `uyim.lang`, `uyim.fav`, `uyim.compare`, `uyim.savedSearches`, `uyim.role`.
 
-## Backendga ulash
+## Backendga ulanish (amalga oshirildi)
 
-`assets/js/data.js` — yagona ma'lumot manbai. Uni API klient bilan almashtiring; `window.UyimData` shakli (CITIES, DISTRICTS, LISTINGS, BANKS, AGENTS …) o'zgarmasin, qolgan kod avtomatik ishlaydi. Batafsil kontrakt — `CLAUDE_CODE_PROMPT.md`.
+`assets/js/api.js` — Django API klienti (`window.UyimAPI`). `assets/js/data.js` endi mock emas —
+sahifa yuklanishida `/api/bootstrap`ga bitta sinxron so'rov yuborib, natijani o'sha eski
+`window.UyimData` shaklida (`CITIES, DISTRICTS, LISTINGS, BANKS, AGENTS …`) qaytaradi, shuning
+uchun qolgan barcha sahifa kodi **o'zgarishsiz** ishlayveradi. Amallar (OTP kirish, e'lon
+joylash, ipoteka, lid yuborish, sevimlilar sinxroni) `UyimAPI` orqali to'g'ridan-to'g'ri real
+backendga boradi. Texnik tafsilotlar va bu yondashuvning nima uchun tanlanganligi —
+[`../backend/README.md`](../backend/README.md#how-the-frontend-connects).

@@ -33,6 +33,7 @@
   </section>
 </div>
 
+<script src="assets/js/api.js"></script>
 <script src="assets/js/data.js"></script>
 <script src="assets/js/ui.js"></script>
 <script>
@@ -87,7 +88,7 @@ function render() {
 
   const ids = new Set(Uyim.state.compare);
   document.getElementById('suggest').innerHTML = D.LISTINGS
-    .filter(l => !ids.has(l.id) && (l.deal === 'sale' || l.deal === 'new')).slice(0, 3)
+    .filter(l => !ids.has(String(l.id)) && (l.deal === 'sale' || l.deal === 'new')).slice(0, 3)
     .map(l => Uyim.propertyCard(l)).join('');
 }
 

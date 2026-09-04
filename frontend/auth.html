@@ -45,6 +45,7 @@
   </section>
 </main>
 
+<script src="assets/js/api.js"></script>
 <script src="assets/js/data.js"></script>
 <script src="assets/js/ui.js"></script>
 <script>
@@ -123,13 +124,21 @@ function wire() {
     role = b.dataset.role;
     el('role').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x.dataset.role === role));
   });
-  el('send')?.addEventListener('click', () => {
+  el('send')?.addEventListener('click', async () => {
     phone = el('phone').value.trim() || phone;
     if (phone.replace(/\D/g, '').length < 9) return Uyim.toast("To'liq raqam kiriting", 'ph-warning');
-    stage = 'otp'; render();
-    Uyim.toast("SMS yuborildi · demo kod 1234", 'ph-chat-teardrop-text');
+    const btn = el('send'); btn.disabled = true;
+    try {
+      const res = await UyimAPI.otpRequest(phone);
+      stage = 'otp'; render();
+      Uyim.toast(res.debug_code ? `SMS yuborildi · demo kod ${res.debug_code}` : "SMS yuborildi", 'ph-chat-teardrop-text');
+    } catch (e) {
+      Uyim.toast(e.message || "SMS yuborilmadi, qaytadan urinib ko'ring", 'ph-warning');
+    } finally {
+      btn.disabled = false;
+    }
   });
-  el('tg-login')?.addEventListener('click', () => { Uyim.toast("Telegram orqali kirish · @uyim_bot ochiladi", 'ph-telegram-logo'); stage = 'profile'; setTimeout(render, 700); });
+  el('tg-login')?.addEventListener('click', () => Uyim.toast("Telegram orqali kirish @uyim_bot ichida /start bilan ishlaydi", 'ph-telegram-logo'));
   el('oneid')?.addEventListener('click', () => Uyim.toast("OneID integratsiyasi backend bosqichida ulanadi", 'ph-info'));
 
   if (stage === 'otp') {
@@ -146,7 +155,22 @@ function wire() {
       n.textContent = '0:' + String(Math.max(t, 0)).padStart(2, '0');
       if (t <= 0) clearInterval(tick);
     }, 1000);
-    el('verify').addEventListener('click', () => { stage = 'profile'; render(); });
+    el('verify').addEventListener('click', async () => {
+      const code = ins.map(i => i.value).join('');
+      if (code.length < 4) return Uyim.toast("4 xonali kodni kiriting", 'ph-warning');
+      try {
+        const res = await UyimAPI.otpVerify(phone, code, role === 'agent' ? 'agency' : 'buyer');
+        stage = res.is_new ? 'profile' : (res.user.name ? 'done' : 'profile');
+        if (stage === 'done') {
+          Uyim.toast("Xush kelibsiz!", 'ph-confetti');
+          setTimeout(() => location.href = res.user.role === 'agency' ? 'dashboard-agent.html' : 'dashboard-buyer.html', 700);
+        } else {
+          render();
+        }
+      } catch (e) {
+        Uyim.toast(e.message || "Kod noto'g'ri", 'ph-warning');
+      }
+    });
     el('back').addEventListener('click', () => { stage = 'phone'; render(); });
   }
 
@@ -158,7 +182,18 @@ function wire() {
     const b = e.target.closest('.chip'); if (!b) return;
     b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') !== 'true');
   });
-  el('finish')?.addEventListener('click', () => {
+  el('finish')?.addEventListener('click', async () => {
+    const patch = {
+      name: el('name')?.value.trim() || '',
+      notify_telegram: el('tg-opt')?.getAttribute('aria-pressed') === 'true',
+    };
+    if (role === 'agent') patch.role = 'agency';
+    try {
+      await UyimAPI.updateMe(patch);
+    } catch (e) {
+      Uyim.toast(e.message || "Profil saqlanmadi", 'ph-warning');
+      return;
+    }
     Uyim.toast("Xush kelibsiz! Profil yaratildi", 'ph-confetti');
     setTimeout(() => location.href = role === 'agent' ? 'dashboard-agent.html' : 'dashboard-buyer.html', 900);
   });

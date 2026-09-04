@@ -1,0 +1,13 @@
+Django==5.2.*
+djangorestframework==3.16.*
+djangorestframework-simplejwt==5.4.*
+django-filter==24.*
+django-cors-headers==4.*
+django-environ==0.11.*
+Pillow==11.*
+celery==5.4.*
+redis==5.*
+requests==2.*
+psycopg2-binary==2.9.*
+gunicorn==23.*
+whitenoise==6.*

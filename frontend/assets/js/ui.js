@@ -12,28 +12,43 @@ window.Uyim = (() => {
   const write = (k, v) => localStorage.setItem(k, JSON.stringify(v));
 
   const state = {
-    fav: read(LS.fav, ['l1','l3']),
-    compare: read(LS.cmp, ['l1','l4']),
+    fav: read(LS.fav, []),
+    compare: read(LS.cmp, []),
     role: read(LS.role, 'buyer')
   };
 
-  const isFav = id => state.fav.includes(id);
+  /* Favorites/compare stay in localStorage for instant, offline-safe UI (unchanged from the
+     mock build) — when signed in, the same action is also mirrored to the backend in the
+     background so it survives across devices. A failed sync never blocks the local toggle.
+     Ids are coerced to strings throughout: real listing ids from the API are numbers, but a
+     `data-fav="${l.id}"` DOM attribute always reads back as a string, so without this a
+     listing could end up stored twice (once as 1, once as "1") depending on which code path
+     favorited it. */
+  const syncApi = window.UyimAPI;
+  const bgSync = (fn) => { if (syncApi && syncApi.isAuthed()) fn().catch(() => {}); };
+
+  const isFav = id => state.fav.includes(String(id));
   const toggleFav = id => {
+    id = String(id);
     const on = isFav(id);
     state.fav = on ? state.fav.filter(x => x !== id) : [...state.fav, id];
     write(LS.fav, state.fav);
     toast(on ? "Saqlanganlardan olindi" : "Sevimlilarga saqlandi");
     document.dispatchEvent(new CustomEvent('uyim:fav', { detail:{ id, on:!on } }));
+    bgSync(() => on ? syncApi.removeFavorite(id) : syncApi.addFavorite(id));
     return !on;
   };
-  const inCompare = id => state.compare.includes(id);
+  const inCompare = id => state.compare.includes(String(id));
   const toggleCompare = id => {
-    if (inCompare(id)) { state.compare = state.compare.filter(x => x !== id); }
+    id = String(id);
+    const wasIn = inCompare(id);
+    if (wasIn) { state.compare = state.compare.filter(x => x !== id); }
     else if (state.compare.length >= 4) { toast("Taqqoslashga eng ko'pi 4 ta mulk"); return false; }
     else { state.compare = [...state.compare, id]; }
     write(LS.cmp, state.compare);
     toast(inCompare(id) ? `Taqqoslashga qo'shildi · ${state.compare.length}` : "Taqqoslashdan olindi");
     document.dispatchEvent(new CustomEvent('uyim:compare'));
+    bgSync(() => wasIn ? syncApi.removeCompare(id) : syncApi.addCompare(id));
     return inCompare(id);
   };
 
@@ -223,7 +238,9 @@ window.Uyim = (() => {
 </div>`;
     el.addEventListener('click', e => {
       if (e.target === el || e.target.closest('[data-close]')) el.remove();
-      if (e.target.closest('[data-chat]')) { el.remove(); toast("Ilova ichida chat ochildi"); }
+      if (e.target.closest('.btn-primary[href^="tel:"]')) syncApi?.sendLead(l.id, 'call').catch(() => {});
+      if (e.target.closest('.btn-tg')) syncApi?.sendLead(l.id, 'telegram').catch(() => {});
+      if (e.target.closest('[data-chat]')) { el.remove(); toast("Ilova ichida chat ochildi"); syncApi?.sendLead(l.id, 'chat').catch(() => {}); }
     });
     document.body.appendChild(el);
   }
@@ -308,14 +325,16 @@ window.Uyim = (() => {
       }
       const cmp = t.closest('[data-compare]'); if (cmp) { e.stopPropagation(); toggleCompare(cmp.dataset.compare); }
       const c = t.closest('[data-contact]');
-      if (c) { e.stopPropagation(); const l = D.LISTINGS.find(x => x.id === c.dataset.contact); if (l) contactModal(l); }
+      if (c) { e.stopPropagation(); const l = byId(c.dataset.contact); if (l) contactModal(l); }
       const card = t.closest('.pcard[data-id]');
       if (card && !t.closest('button')) location.href = `listing.html?id=${card.dataset.id}`;
     });
   }
 
   const qs = k => new URLSearchParams(location.search).get(k);
-  const byId = id => D.LISTINGS.find(l => l.id === id);
+  // Listing ids come back from the API as numbers; URL query params are always strings —
+  // compare loosely so `listing.html?id=2` still resolves against a real numeric l.id.
+  const byId = id => D.LISTINGS.find(l => String(l.id) === String(id));
 
   return { mount, state, isFav, toggleFav, inCompare, toggleCompare, usd, uzs, nf, priceLabel, ppm,
            pinLabel, titleOf, placeOf, dealLabel, badges, trustBadges, propertyCard, contactModal,

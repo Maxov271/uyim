@@ -43,6 +43,7 @@
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="assets/js/api.js"></script>
 <script src="assets/js/data.js"></script>
 <script src="assets/js/ui.js"></script>
 <script>
@@ -228,10 +229,33 @@ function render() {
 }
 
 function wire() {
-  el('next')?.addEventListener('click', () => {
+  el('next')?.addEventListener('click', async () => {
     if (step === STEPS.length) {
-      Uyim.toast("E'lon moderatsiyaga yuborildi · Telegram kanallariga tasdiqdan keyin chiqadi", 'ph-paper-plane-tilt');
-      setTimeout(() => location.href = 'dashboard-agent.html', 1400);
+      if (!UyimAPI.isAuthed()) {
+        Uyim.toast("Avval hisobingizga kiring", 'ph-warning');
+        setTimeout(() => location.href = 'auth.html', 900);
+        return;
+      }
+      const btn = el('next'); btn.disabled = true; btn.textContent = "Yuborilmoqda…";
+      try {
+        const listing = await UyimAPI.createListing({
+          deal: form.deal, type: form.type, price_usd: form.price,
+          negotiable: form.negotiable, mortgage_allowed: form.mortgage, swap_allowed: !!form.swap,
+          rooms: form.rooms, area: form.area, floor: form.floor, floors: form.floors,
+          year: form.year, condition: form.condition,
+          city: D.DISTRICTS.find(x => x.id === form.district).city, district: form.district,
+          mahalla: form.mahalla, lat: form.lat, lng: form.lng,
+          title: form.title, description: form.desc, features: [...form.features],
+        });
+        if (form.boost !== 'free') {
+          UyimAPI.boostListing(listing.id, form.boost).catch(() => {});
+        }
+        Uyim.toast("E'lon moderatsiyaga yuborildi · Telegram kanallariga tasdiqdan keyin chiqadi", 'ph-paper-plane-tilt');
+        setTimeout(() => location.href = 'dashboard-agent.html', 1400);
+      } catch (e) {
+        Uyim.toast(e.message || "E'lon yuborilmadi, qaytadan urinib ko'ring", 'ph-warning');
+        btn.disabled = false; btn.textContent = "E'lonni chop etish";
+      }
       return;
     }
     step++; render();
@@ -314,11 +338,12 @@ function wire() {
   let pick;
   if (el('pickmap')) {
     const d = D.DISTRICTS.find(x => x.id === form.district);
+    form.lat = form.lat || d.center[0]; form.lng = form.lng || d.center[1];
     pick = Uyim.initMap(el('pickmap'), { center:d.center, zoom:14 });
     if (pick) {
       let mk = L.marker(d.center, { draggable:true,
         icon:L.divIcon({ html:'<span class="pin is-active"><i class="ph-fill ph-map-pin"></i> Mulk shu yerda</span>', className:'', iconSize:null }) }).addTo(pick);
-      pick.on('click', e => mk.setLatLng(e.latlng));
+      pick.on('click', e => { mk.setLatLng(e.latlng); form.lat = e.latlng.lat; form.lng = e.latlng.lng; });
     }
   }
 }
