@@ -189,3 +189,20 @@ CLICK_SECRET_KEY = env("CLICK_SECRET_KEY", default="")
 CBU_RATE_API = env("CBU_RATE_API", default="https://cbu.uz/uz/arkhiv-kursov-valyut/json/")
 
 LISTING_APPROX_RADIUS_M = 150  # public API hides exact address, only ±150m jitter point shown
+
+# ---------------------------------------------------------------- Logging
+# Without this, Python's logging defaults to WARNING+ with no handler wired to stdout, so
+# logger.info(...) calls (e.g. apps.accounts.sms's "[DEV OTP] <phone> -> <code>" fallback used
+# whenever ESKIZ_EMAIL/ESKIZ_PASSWORD aren't configured) silently vanish instead of reaching
+# `docker logs` / the hosting platform's runtime logs.
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {"class": "logging.StreamHandler"},
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
+    },
+}
