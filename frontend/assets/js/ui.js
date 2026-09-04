@@ -137,7 +137,7 @@ window.Uyim = (() => {
     <div>
       <h4>Telegram</h4>
       <p class="tiny muted" style="margin-bottom:12px">Bot orqali yangi e'lonlar to'g'ridan-to'g'ri sizga keladi.</p>
-      <a class="btn btn-tg btn-sm btn-block" href="#"><i class="ph-fill ph-telegram-logo"></i>@uyim_bot</a>
+      <a class="btn btn-tg btn-sm btn-block" href="#"><i class="ph-fill ph-telegram-logo"></i>@uyimuzbot</a>
     </div>
   </div>
   <div class="ftr-bottom">
@@ -228,7 +228,7 @@ window.Uyim = (() => {
   </div>
   <a class="btn btn-primary btn-lg btn-block" href="tel:${a.phone.replace(/\s/g,'')}"><i class="ph-fill ph-phone"></i>${a.phone}</a>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
-    <a class="btn btn-tg" href="https://t.me/uyim_bot" target="_blank" rel="noopener"><i class="ph-fill ph-telegram-logo"></i>Telegram</a>
+    <a class="btn btn-tg" href="https://t.me/uyimuzbot" target="_blank" rel="noopener"><i class="ph-fill ph-telegram-logo"></i>Telegram</a>
     <button class="btn btn-outline" data-chat><i class="ph ph-chat-circle-dots"></i>Ilova chati</button>
   </div>
   <div class="note"><i class="ph-duotone ph-shield-check"></i>

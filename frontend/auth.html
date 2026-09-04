@@ -139,7 +139,7 @@ function wire() {
       btn.disabled = false;
     }
   });
-  el('tg-login')?.addEventListener('click', () => Uyim.toast("Telegram orqali kirish @uyim_bot ichida /start bilan ishlaydi", 'ph-telegram-logo'));
+  el('tg-login')?.addEventListener('click', () => window.open('https://t.me/uyimuzbot?start=login', '_blank', 'noopener'));
   el('oneid')?.addEventListener('click', () => Uyim.toast("OneID integratsiyasi backend bosqichida ulanadi", 'ph-info'));
 
   if (stage === 'otp') {
