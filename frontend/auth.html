@@ -54,6 +54,10 @@ Uyim.mount({ active:'', mobile:'me' });
 const el = id => document.getElementById(id);
 let stage = 'phone', role = 'buyer';
 
+// Allaqachon tizimga kirgan bo'lsa, login shaklini ko'rsatmasdan to'g'ridan-to'g'ri
+// kabinetiga yuboramiz.
+if (UyimAPI.isAuthed()) location.href = Uyim.dashboardHref();
+
 function view() {
   if (stage === 'phone') return `
     <div class="stack" style="gap:8px">
@@ -161,10 +165,11 @@ function wire() {
       if (code.length < 4) return Uyim.toast("4 xonali kodni kiriting", 'ph-warning');
       try {
         const res = await UyimAPI.otpVerify(phone, code, role === 'agent' ? 'agency' : 'buyer');
+        Uyim.setRole(res.user.role);
         stage = res.is_new ? 'profile' : (res.user.name ? 'done' : 'profile');
         if (stage === 'done') {
           Uyim.toast("Xush kelibsiz!", 'ph-confetti');
-          setTimeout(() => location.href = res.user.role === 'agency' ? 'dashboard-agent.html' : 'dashboard-buyer.html', 700);
+          setTimeout(() => location.href = Uyim.dashboardHref(), 700);
         } else {
           render();
         }
@@ -195,8 +200,9 @@ function wire() {
       Uyim.toast(e.message || "Profil saqlanmadi", 'ph-warning');
       return;
     }
+    Uyim.setRole(role === 'agent' ? 'agency' : 'buyer');
     Uyim.toast("Xush kelibsiz! Profil yaratildi", 'ph-confetti');
-    setTimeout(() => location.href = role === 'agent' ? 'dashboard-agent.html' : 'dashboard-buyer.html', 900);
+    setTimeout(() => location.href = Uyim.dashboardHref(), 900);
   });
 }
 

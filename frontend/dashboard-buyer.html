@@ -17,8 +17,8 @@
   <div class="spread" style="align-items:flex-end;margin-bottom:22px">
     <div class="stack" style="gap:6px">
       <span class="eyebrow">Xaridor kabineti</span>
-      <h1>Dilshod Karimov</h1>
-      <span class="caption">+998 90 *** 45 67 · Toshkent · ro'yxatdan o'tgan 2025</span>
+      <h1 id="me-name">—</h1>
+      <span class="caption" id="me-meta">—</span>
     </div>
     <div class="row" style="gap:8px">
       <a class="btn btn-outline btn-sm" href="compare.html"><i class="ph ph-scales"></i>Taqqoslash</a>
@@ -101,9 +101,16 @@
 <script src="assets/js/data.js"></script>
 <script src="assets/js/ui.js"></script>
 <script>
+if (!UyimAPI.isAuthed()) location.href = 'auth.html';
 Uyim.mount({ active:'', mobile:'fav' });
 const D = UyimData;
 const el = id => document.getElementById(id);
+
+UyimAPI.me().then(me => {
+  el('me-name').textContent = me.name || me.phone;
+  const city = D.CITIES.find(c => c.id === me.city);
+  el('me-meta').textContent = [me.phone, city?.name].filter(Boolean).join(' · ');
+}).catch(() => { UyimAPI.clearTokens(); location.href = 'auth.html'; });
 
 function drawFavs() {
   const ls = Uyim.state.fav.map(Uyim.byId).filter(Boolean);

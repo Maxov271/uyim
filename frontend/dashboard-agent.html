@@ -16,9 +16,9 @@
 <div class="wrap sec">
   <div class="spread" style="align-items:flex-end;margin-bottom:22px">
     <div class="stack" style="gap:8px">
-      <span class="badge badge-agency"><i class="ph-fill ph-seal-check"></i>ISHONCHLI AGENTLIK · 4 YIL</span>
-      <h1>Golden House Agency</h1>
-      <span class="caption">18 faol e'lon · reyting 4,8 · Toshkent</span>
+      <span class="badge badge-agency"><i class="ph-fill ph-seal-check"></i>AGENT / QURUVCHI</span>
+      <h1 id="me-name">—</h1>
+      <span class="caption" id="me-meta">—</span>
     </div>
     <div class="row" style="gap:8px">
       <button class="btn btn-outline btn-sm" id="tg-btn"><i class="ph-fill ph-telegram-logo" style="color:var(--tg)"></i>Kanallar · 12</button>
@@ -103,9 +103,17 @@
 <script src="assets/js/data.js"></script>
 <script src="assets/js/ui.js"></script>
 <script>
+if (!UyimAPI.isAuthed()) location.href = 'auth.html';
 Uyim.mount({ active:'', mobile:'me' });
 const D = UyimData;
 const el = id => document.getElementById(id);
+
+UyimAPI.me().then(me => {
+  if (me.role !== 'agency') { location.href = 'dashboard-buyer.html'; return; }
+  el('me-name').textContent = me.name || me.phone;
+  const city = D.CITIES.find(c => c.id === me.city);
+  el('me-meta').textContent = [me.phone, city?.name].filter(Boolean).join(' · ');
+}).catch(() => { UyimAPI.clearTokens(); location.href = 'auth.html'; });
 
 const own = D.LISTINGS.slice(0, 8).map((l, i) => ({
   l, views: 1240 - i * 137, calls: 38 - i * 4, tg: 12 - i,

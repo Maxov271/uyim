@@ -94,6 +94,17 @@ window.Uyim = (() => {
     { href:'compare.html',           label:"Taqqoslash",  key:'compare' }
   ];
 
+  const dashboardHref = () => state.role === 'agency' ? 'dashboard-agent.html' : 'dashboard-buyer.html';
+
+  function authTools() {
+    if (syncApi && syncApi.isAuthed()) {
+      return `
+      <a class="btn btn-icon" href="${dashboardHref()}" title="Kabinet"><i class="ph ph-user"></i></a>
+      <button class="btn btn-icon" data-logout title="Chiqish"><i class="ph ph-sign-out"></i></button>`;
+    }
+    return `<a class="btn btn-outline btn-sm" href="auth.html">Kirish</a>`;
+  }
+
   function header(active) {
     return `
 <header class="hdr">
@@ -110,12 +121,18 @@ window.Uyim = (() => {
         ${['uz','ru','en'].map(l => `<button data-lang="${l}">${l.toUpperCase()}</button>`).join('')}
       </div>
       <button class="btn btn-icon" data-theme-toggle title="Tungi rejim"><i class="ph ph-moon-stars"></i></button>
-      <a class="btn btn-icon" href="dashboard-buyer.html" title="Kabinet"><i class="ph ph-user"></i></a>
-      <a class="btn btn-outline btn-sm" href="auth.html">Kirish</a>
+      ${authTools()}
       <a class="btn btn-cta btn-sm" href="add-listing.html"><i class="ph ph-plus-circle"></i>E'lon joylash</a>
     </div>
   </div>
 </header>`;
+  }
+
+  function logout() {
+    syncApi?.logout();
+    write(LS.role, 'buyer');
+    toast("Chiqdingiz", 'ph-sign-out');
+    setTimeout(() => location.href = 'index.html', 500);
   }
 
   function footer() {
@@ -137,7 +154,7 @@ window.Uyim = (() => {
     <div>
       <h4>Telegram</h4>
       <p class="tiny muted" style="margin-bottom:12px">Bot orqali yangi e'lonlar to'g'ridan-to'g'ri sizga keladi.</p>
-      <a class="btn btn-tg btn-sm btn-block" href="#"><i class="ph-fill ph-telegram-logo"></i>@uyimuzbot</a>
+      <a class="btn btn-tg btn-sm btn-block" href="https://t.me/uyimuzbot" target="_blank" rel="noopener"><i class="ph-fill ph-telegram-logo"></i>@uyimuzbot</a>
     </div>
   </div>
   <div class="ftr-bottom">
@@ -156,7 +173,7 @@ window.Uyim = (() => {
   ${item('search.html','ph-map-trifold',"Xarita",'search')}
   <a class="fab" href="add-listing.html" aria-label="E'lon joylash"><i class="ph ph-plus"></i></a>
   ${item('dashboard-buyer.html','ph-heart',"Sevimli",'fav')}
-  ${item('dashboard-agent.html','ph-user-circle',"Kabinet",'me')}
+  ${item(syncApi && syncApi.isAuthed() ? dashboardHref() : 'auth.html','ph-user-circle',"Kabinet",'me')}
 </div></nav>`;
   }
 
@@ -315,6 +332,7 @@ window.Uyim = (() => {
     document.addEventListener('click', e => {
       const t = e.target;
       if (t.closest('[data-theme-toggle]')) applyTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
+      if (t.closest('[data-logout]')) logout();
       const lg = t.closest('[data-lang]'); if (lg) applyLang(lg.dataset.lang);
       const fav = t.closest('[data-fav]');
       if (fav) {
@@ -338,5 +356,6 @@ window.Uyim = (() => {
 
   return { mount, state, isFav, toggleFav, inCompare, toggleCompare, usd, uzs, nf, priceLabel, ppm,
            pinLabel, titleOf, placeOf, dealLabel, badges, trustBadges, propertyCard, contactModal,
-           mortgage, toast, initMap, priceMarker, qs, byId, applyTheme, applyLang, I18N };
+           mortgage, toast, initMap, priceMarker, qs, byId, applyTheme, applyLang, I18N,
+           logout, dashboardHref, setRole: r => write(LS.role, r) };
 })();
