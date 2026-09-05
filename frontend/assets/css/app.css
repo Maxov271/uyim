@@ -74,7 +74,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .wrap{max-width:1320px;margin:0 auto;padding:0 24px}
 .stack{display:flex;flex-direction:column}
 .row{display:flex;align-items:center}
-.spread{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.spread{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 
 /* ---------- buttons ---------- */
@@ -429,9 +429,10 @@ html[data-theme="dark"] .mnav a[aria-current="page"]{color:#7FB6E8}
   .search-row{flex-direction:column}
   .ftr-in{grid-template-columns:1fr 1fr}
   .rail>*{flex-basis:86%}
-  .tabs{overflow-x:auto;scrollbar-width:none}
-  .tabs::-webkit-scrollbar{display:none}
-  .tabs button{flex:none;white-space:nowrap;padding:11px 16px}
+  .tabs,.seg{overflow-x:auto;scrollbar-width:none}
+  .tabs::-webkit-scrollbar,.seg::-webkit-scrollbar{display:none}
+  .tabs button,.seg button{flex:none;white-space:nowrap}
+  .tabs button{padding:11px 16px}
   .sec{padding:30px 0}
 }
 @media print{.hdr,.mnav,.ftr,.map-tools{display:none}}
