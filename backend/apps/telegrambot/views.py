@@ -12,6 +12,12 @@ User = get_user_model()
 class TelegramWebhookView(APIView):
     """Receives Telegram Bot API updates (https://core.telegram.org/bots/api#update).
 
+    SUPERSEDED: the bot now runs continuously via long polling — see
+    apps.telegrambot.aiogram_bot / `python manage.py run_telegram_bot` (started by
+    backend/start.sh alongside gunicorn) — so no webhook is registered anymore and
+    Telegram never calls this endpoint. Kept only as a reference/fallback; the logic
+    below is duplicated (by design, not by import) in aiogram_bot.py's handlers.
+
     Implements the MVP flow from CLAUDE_CODE_PROMPT.md §6: /start asks for a phone number
     via a contact-request keyboard, then links the shared contact to a User account so
     saved-search pushes and new-lead alerts (see telegrambot/tasks.py) have somewhere to go.

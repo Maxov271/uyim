@@ -11,3 +11,4 @@ requests==2.*
 psycopg2-binary==2.9.*
 gunicorn==23.*
 whitenoise==6.*
+aiogram==3.*

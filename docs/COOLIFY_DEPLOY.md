@@ -108,11 +108,13 @@ python manage.py createsuperuser --phone +998901234567
 Frontendni qayerda joylashtirsangiz ham (Coolify'da alohida static-site sifatida, yoki
 boshqa hosting), shu bitta qatorni qo'shish yetarli.
 
-### 8. Telegram webhook (bot tayyor bo'lgach)
+### 8. Telegram bot (bot tayyor bo'lgach)
 
-```bash
-python manage.py set_telegram_webhook https://uyim.server.umarovgroup.uz
-```
+Webhook kerak emas — bot konteyner ichida `backend/start.sh` orqali long-polling bilan
+avtomatik va doimiy ishga tushadi (`python manage.py run_telegram_bot`, aiogram). Yagona
+shart: `TELEGRAM_BOT_TOKEN` environment variable to'ldirilgan bo'lishi kerak (yuqoridagi
+3-qadam) — token qo'shilgach shunchaki qayta deploy qiling, bot o'zi ishga tushadi.
+Runtime Logs'da `Telegram bot: long polling boshlandi.` qatorini ko'rsangiz — ishlayapti.
 
 ---
 

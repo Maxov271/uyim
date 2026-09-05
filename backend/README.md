@@ -39,7 +39,8 @@ backend/
     leads/                  Lead (call/chat/telegram), ChatThread/ChatMessage (data model ready;
                            no chat UI in the frontend yet, so no chat REST/WS surface built)
     mortgage/               Bank, MortgageApplication, calculator (same formula as the frontend)
-    telegrambot/            TelegramChannel/TelegramPost, bot client, webhook, auto-publish tasks
+    telegrambot/            TelegramChannel/TelegramPost, bot client, always-on long-polling
+                           bot (aiogram), auto-publish tasks
     payments/               BoostOrder, Payme + Click gateways
     developers/             Developer, Project (new buildings)
     bootstrap/               GET /api/bootstrap — aggregate read matching window.UyimData 1:1
@@ -92,7 +93,9 @@ plus a few pragmatic additions:
   real listing CRUD.
 - `POST /api/payments/payme/webhook`, `POST /api/payments/click/{prepare,complete}` — payment
   provider callbacks (see Payments below).
-- `POST /api/telegram/webhook/<secret>` — Telegram Bot API webhook receiver.
+- `POST /api/telegram/webhook/<secret>` — superseded; the bot now runs continuously via
+  long polling (`python manage.py run_telegram_bot`, aiogram — see `start.sh`), not a
+  webhook, so nothing calls this endpoint anymore. Left in place as a reference only.
 
 All error responses use the required shape: `{code, message_uz, message_ru}`.
 
@@ -100,16 +103,26 @@ All error responses use the required shape: `{code, message_uz, message_ru}`.
 
 `POST /api/auth/otp/request {phone, channel: "telegram"}` returns a
 `telegram_deep_link` (`https://t.me/<bot>?start=<token>`) instead of sending an SMS. When the
-user opens it and presses **Start**, the bot webhook (`apps/telegrambot/views.py`) looks up
-the token, delivers the same 4-digit code as a chat message, and records that chat's
-`telegram_id`. `POST /api/auth/otp/verify` is unchanged — same code, same endpoint — and
-additionally links `telegram_id`/`telegram_username` onto the account the moment it verifies,
-so the account is bot-notifiable (saved searches, new leads) without a separate linking step.
-Requires `TELEGRAM_BOT_USERNAME` set (the token itself doesn't need a live bot to *generate* —
-only to *deliver*, so requesting a link works even before `TELEGRAM_BOT_TOKEN` is configured;
-delivery obviously needs a real, webhook-registered bot). Verified end-to-end locally by
-posting a synthetic Telegram update straight at the webhook endpoint and confirming the
-account came out linked — see git history for the test script if useful as a reference.
+user opens it and presses **Start**, the bot (`apps/telegrambot/aiogram_bot.py`, running
+continuously via long polling — see "Telegram bot" below) looks up the token, delivers the
+same 4-digit code as a chat message, and records that chat's `telegram_id`.
+`POST /api/auth/otp/verify` is unchanged — same code, same endpoint — and additionally links
+`telegram_id`/`telegram_username` onto the account the moment it verifies, so the account is
+bot-notifiable (saved searches, new leads) without a separate linking step. Requires
+`TELEGRAM_BOT_USERNAME` set (the token itself doesn't need a live bot to *generate* — only to
+*deliver*, so requesting a link works even before `TELEGRAM_BOT_TOKEN` is configured; delivery
+obviously needs the bot process actually running with a real token).
+
+### Telegram bot (long polling, always on)
+
+`python manage.py run_telegram_bot` (aiogram) is a continuously-running process — not a
+webhook — that `start.sh` launches in the background (with a restart-on-crash loop)
+alongside gunicorn in the same container, so there's nothing extra to deploy or expose
+publicly. It handles `/start` (asks for phone via a contact-request button → links the
+account), a shared contact, and `/start <token>` (Telegram-delivered OTP, above). Needs
+`TELEGRAM_BOT_TOKEN` set; if it's blank the command logs a warning and exits immediately,
+and the restart loop just keeps retrying quietly until the token is configured and the app
+is redeployed.
 
 ## How the frontend connects
 
