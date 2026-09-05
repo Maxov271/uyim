@@ -1,4 +1,8 @@
 build/
+build_ipa/
+builds/
 DerivedData/
+*.xcarchive
+*.ipa
 *.xcuserstate
 xcuserdata/
