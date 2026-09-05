@@ -3,6 +3,9 @@
       "target": {
         "namespace": "android_app",
         "package_name": "uz.uyim.twa",
-        "sha256_cert_fingerprints": ["4E:C5:A4:D2:80:8D:89:91:BF:6A:56:6D:78:B6:08:BC:86:9C:09:C2:A1:79:90:02:82:28:5E:8B:05:FB:A3:B6"]
+        "sha256_cert_fingerprints": [
+          "4E:C5:A4:D2:80:8D:89:91:BF:6A:56:6D:78:B6:08:BC:86:9C:09:C2:A1:79:90:02:82:28:5E:8B:05:FB:A3:B6",
+          "5E:1B:C1:D8:5E:76:6B:2C:40:3F:B6:B4:01:CF:1A:57:BB:4B:48:FA:E5:9B:A7:53:49:65:0D:16:E6:29:63:A8"
+        ]
       }
     }]
