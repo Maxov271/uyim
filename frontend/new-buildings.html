@@ -2,7 +2,7 @@
 <html lang="uz">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Yangi binolar — Uyim.uz</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -87,7 +87,7 @@ function draw() {
     const d = D.DISTRICTS.find(x => x.id === p.district);
     const m = Uyim.mortgage({ price:p.from, downPct:15, years:15, rate:17 });
     return `
-    <article class="card" style="display:grid;grid-template-columns:300px 1fr;overflow:hidden">
+    <article class="card split-media" style="overflow:hidden">
       <div style="background:var(--ph);display:grid;place-items:center;color:var(--faint);min-height:210px;position:relative">
         <i class="ph-duotone ph-buildings" style="font-size:34px"></i>
         <div class="pcard-badges">

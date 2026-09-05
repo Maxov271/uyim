@@ -45,8 +45,9 @@ html[data-theme="dark"]{
   --shadow-lg:0 24px 60px -24px rgba(0,0,0,.7);
 }
 
-*{box-sizing:border-box}
+*{box-sizing:border-box;min-width:0}
 html{-webkit-text-size-adjust:100%}
+html,body{overflow-x:hidden;max-width:100%}
 body{
   margin:0;background:var(--bg);color:var(--ink);
   font:400 15px/1.6 var(--font);
@@ -150,6 +151,16 @@ html[data-theme="dark"] .badge-new{color:#fff}
 .g4{grid-template-columns:repeat(4,1fr)}
 .rail{display:flex;gap:18px;overflow-x:auto;padding:2px 24px 10px;scroll-snap-type:x mandatory}
 .rail>*{flex:0 0 322px;scroll-snap-align:start}
+
+/* generic "main content + fixed sidebar" layout — collapses to one column on
+   tablet/phone (unlike a plain inline grid-template-columns, which no media
+   query can ever override once set inline). Width is set per-use via the
+   --side-w custom property, e.g. style="--side-w:380px". */
+.split-side{display:grid;grid-template-columns:1fr var(--side-w,360px);gap:18px;align-items:start}
+/* "1.4fr 1fr" promo-banner pair (e.g. bank + Telegram cards) */
+.split-14{display:grid;grid-template-columns:1.4fr 1fr;gap:18px}
+/* media thumbnail + content card, e.g. new-building project rows */
+.split-media{display:grid;grid-template-columns:var(--media-w,300px) 1fr}
 
 /* ---------- header ---------- */
 .hdr{
@@ -386,7 +397,7 @@ html[data-theme="dark"] .mnav a[aria-current="page"]{color:#7FB6E8}
 @media (max-width:1180px){
   .g4{grid-template-columns:repeat(2,1fr)}
   .filters,.filters-more{grid-template-columns:repeat(2,1fr)}
-  .detail{grid-template-columns:1fr}
+  .detail,.split-side,.split-14{grid-template-columns:1fr}
   .sticky{position:static}
   .kpis{grid-template-columns:repeat(2,1fr)}
   .steps{grid-template-columns:repeat(3,1fr)}
@@ -395,6 +406,7 @@ html[data-theme="dark"] .mnav a[aria-current="page"]{color:#7FB6E8}
 }
 @media (max-width:900px){
   .nav,.lang{display:none}
+  .hdr .btn-cta{display:none} /* mobile bottom nav's + FAB already covers "E'lon joylash" */
   .split{grid-template-columns:1fr;height:auto}
   .split-map{height:56vh;position:sticky;top:var(--header-h);z-index:10}
   .split-list{border-right:0;padding-bottom:96px}
@@ -403,17 +415,23 @@ html[data-theme="dark"] .mnav a[aria-current="page"]{color:#7FB6E8}
   .gallery>div{aspect-ratio:16/10}
   .gallery>div:first-child{grid-row:auto}
   .spec-grid{grid-template-columns:repeat(2,1fr)}
+  .split-media{grid-template-columns:1fr}
   .mnav{display:block}
   body{padding-bottom:78px}
 }
 @media (max-width:640px){
   .wrap{padding:0 16px}
+  .hdr-in{gap:10px;padding:0 16px}
   h1{font-size:26px}h2{font-size:20px}
   .g3,.g4{grid-template-columns:1fr}
-  .kpis,.filters,.filters-more,.steps,.uploads{grid-template-columns:1fr 1fr}
+  .kpis,.steps,.uploads{grid-template-columns:1fr 1fr}
+  .filters,.filters-more{grid-template-columns:1fr}
   .search-row{flex-direction:column}
   .ftr-in{grid-template-columns:1fr 1fr}
   .rail>*{flex-basis:86%}
+  .tabs{overflow-x:auto;scrollbar-width:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .tabs button{flex:none;white-space:nowrap;padding:11px 16px}
   .sec{padding:30px 0}
 }
 @media print{.hdr,.mnav,.ftr,.map-tools{display:none}}

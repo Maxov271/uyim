@@ -2,7 +2,7 @@
 <html lang="uz">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Uyim.uz — O'zbekiston bo'ylab kvartira, uy va yer uchastkalari</title>
 <meta name="description" content="Mahalla darajasidagi qidiruv, split-screen xarita, mahalliy banklar ipoteka kalkulyatori va Telegram integratsiyasi.">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -90,10 +90,12 @@
       <span class="caption">1 m² o'rtacha narxi · oxirgi 30 kun</span>
     </div>
     <div class="card" style="overflow:hidden">
-      <table class="table">
-        <thead><tr><th>Tuman</th><th>1 m² narxi</th><th>3 oylik o'zgarish</th><th>Faol e'lon</th><th></th></tr></thead>
-        <tbody id="stats-body"></tbody>
-      </table>
+      <div style="overflow-x:auto">
+        <table class="table" style="min-width:520px">
+          <thead><tr><th>Tuman</th><th>1 m² narxi</th><th>3 oylik o'zgarish</th><th>Faol e'lon</th><th></th></tr></thead>
+          <tbody id="stats-body"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 </section>
@@ -114,7 +116,7 @@
 
 <!-- Bank + Telegram bannerlari -->
 <section class="sec" style="padding-top:8px">
-  <div class="wrap grid" style="grid-template-columns:1.4fr 1fr">
+  <div class="wrap split-14">
     <div class="banner">
       <div class="stack" style="gap:10px">
         <span class="eyebrow" style="color:#8FE3C4">Hamkor banklar</span>
