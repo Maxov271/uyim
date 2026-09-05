@@ -180,7 +180,7 @@ html[data-theme="dark"] .badge-new{color:#fff}
 }
 .nav a:hover{background:var(--surface-2);color:var(--ink)}
 .nav a[aria-current="page"]{color:var(--ink);background:var(--surface-2)}
-.hdr-tools{display:flex;align-items:center;gap:8px}
+.hdr-tools{display:flex;align-items:center;gap:10px}
 .lang{display:flex;background:var(--surface-2);border-radius:9px;padding:3px}
 .lang button{border:0;background:transparent;border-radius:7px;padding:6px 9px;font-size:12.5px;font-weight:700;color:var(--sub);cursor:pointer}
 .lang button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow-sm)}
@@ -235,7 +235,7 @@ html[data-theme="dark"] .badge-new{color:#fff}
 .pcard-specs span{display:flex;align-items:center;gap:5px}
 .pcard-specs i{font-size:15px;color:var(--emerald)}
 .pcard-foot{margin-top:auto;padding-top:12px;display:flex;align-items:center;gap:8px;border-top:1px solid var(--line-soft)}
-.pcard-actions{margin-left:auto;display:flex;gap:6px}
+.pcard-actions{margin-left:auto;display:flex;gap:8px}
 .pcard-mini{display:flex;gap:12px;padding:12px;align-items:center}
 .pcard-mini .thumb{width:96px;height:74px;border-radius:10px;background:var(--ph);flex:none;display:grid;place-items:center;color:var(--faint)}
 
@@ -434,5 +434,14 @@ html[data-theme="dark"] .mnav a[aria-current="page"]{color:#7FB6E8}
   .tabs button,.seg button{flex:none;white-space:nowrap}
   .tabs button{padding:11px 16px}
   .sec{padding:30px 0}
+  /* fade the right edge so a scrollable tab/segment row reads as "more this way",
+     not as content cut off mid-word */
+  .tabs,.seg,.chip-scroll{
+    -webkit-mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent 100%);
+    mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent 100%);
+  }
+}
+@media (max-width:400px){
+  .kpis{grid-template-columns:1fr}
 }
 @media print{.hdr,.mnav,.ftr,.map-tools{display:none}}
