@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import User
+from .models import OTPCode, User
 
 
 class MeSerializer(serializers.ModelSerializer):
@@ -38,6 +38,7 @@ class MeSerializer(serializers.ModelSerializer):
 
 class OTPRequestSerializer(serializers.Serializer):
     phone = serializers.CharField(max_length=20)
+    channel = serializers.ChoiceField(choices=OTPCode.Channel.choices, default=OTPCode.Channel.SMS)
 
 
 class OTPVerifySerializer(serializers.Serializer):

@@ -1,4 +1,5 @@
 import random
+import secrets
 from datetime import timedelta
 
 from django.contrib.auth.models import AbstractUser, BaseUserManager
@@ -75,9 +76,20 @@ class OTPCode(models.Model):
     class Purpose(models.TextChoices):
         LOGIN = "login", "Kirish"
 
+    class Channel(models.TextChoices):
+        SMS = "sms", "SMS"
+        TELEGRAM = "telegram", "Telegram"
+
     phone = models.CharField(max_length=20, db_index=True)
     code = models.CharField(max_length=6)
     purpose = models.CharField(max_length=16, choices=Purpose.choices, default=Purpose.LOGIN)
+    channel = models.CharField(max_length=16, choices=Channel.choices, default=Channel.SMS)
+    # Telegram delivery: opaque one-time token embedded in the bot deep link
+    # (https://t.me/<bot>?start=<link_token>) — the webhook's /start handler looks the OTP up
+    # by this token and delivers the code as a chat message instead of SMS.
+    link_token = models.CharField(max_length=48, unique=True, null=True, blank=True)
+    telegram_chat_id = models.BigIntegerField(null=True, blank=True)
+    telegram_username = models.CharField(max_length=64, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
     is_used = models.BooleanField(default=False)
@@ -87,10 +99,21 @@ class OTPCode(models.Model):
         indexes = [models.Index(fields=["phone", "is_used"])]
 
     @classmethod
-    def issue(cls, phone: str, ttl_seconds: int, static_code: str | None = None) -> "OTPCode":
+    def issue(
+        cls,
+        phone: str,
+        ttl_seconds: int,
+        static_code: str | None = None,
+        channel: str = Channel.SMS,
+    ) -> "OTPCode":
         code = static_code or f"{random.randint(0, 9999):04d}"
+        link_token = secrets.token_urlsafe(24) if channel == cls.Channel.TELEGRAM else None
         return cls.objects.create(
-            phone=phone, code=code, expires_at=timezone.now() + timedelta(seconds=ttl_seconds)
+            phone=phone,
+            code=code,
+            channel=channel,
+            link_token=link_token,
+            expires_at=timezone.now() + timedelta(seconds=ttl_seconds),
         )
 
     def is_valid(self) -> bool:

@@ -15,6 +15,12 @@ class TelegramWebhookView(APIView):
     Implements the MVP flow from CLAUDE_CODE_PROMPT.md §6: /start asks for a phone number
     via a contact-request keyboard, then links the shared contact to a User account so
     saved-search pushes and new-lead alerts (see telegrambot/tasks.py) have somewhere to go.
+
+    Also implements Telegram-delivered OTP login: auth.html's "Telegram orqali kod olish"
+    opens https://t.me/<bot>?start=<link_token> — Telegram passes that token straight through
+    as the /start payload, so /start <token> here looks up the pending OTPCode and delivers
+    the code as a chat message instead of SMS (see apps/accounts/views.py OTPRequestView /
+    OTPVerifyView for the other half of this flow).
     """
 
     permission_classes = [permissions.AllowAny]
@@ -60,6 +66,9 @@ class TelegramWebhookView(APIView):
 
         text = (message.get("text") or "").strip()
         if text.startswith("/start"):
+            payload = text[len("/start"):].strip()
+            if payload and self._deliver_otp(client, chat_id, from_user, payload):
+                return
             client.send_message(
                 chat_id,
                 "Uyim.uz botiga xush kelibsiz! Hisobingizni ulash uchun telefon raqamingizni yuboring.",
@@ -71,3 +80,24 @@ class TelegramWebhookView(APIView):
             chat_id,
             "Buyruqni tushunmadim. /start bilan boshlang.",
         )
+
+    def _deliver_otp(self, client: TelegramClient, chat_id, from_user: dict, link_token: str) -> bool:
+        from apps.accounts.models import OTPCode
+
+        otp = OTPCode.objects.filter(link_token=link_token, channel=OTPCode.Channel.TELEGRAM).first()
+        if not otp or not otp.is_valid():
+            client.send_message(
+                chat_id, "Bu havola eskirgan. Ilovaga qaytib, kodni qaytadan so'rang."
+            )
+            return True
+
+        otp.telegram_chat_id = chat_id
+        otp.telegram_username = from_user.get("username", "")
+        otp.save(update_fields=["telegram_chat_id", "telegram_username"])
+
+        client.send_message(
+            chat_id,
+            f"Uyim.uz tasdiqlash kodingiz: <b>{otp.code}</b>\nKodni ilovaga qaytib kiriting. "
+            f"Hech kimga aytmang.",
+        )
+        return True

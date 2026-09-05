@@ -31,6 +31,7 @@ class UserAdmin(DjangoUserAdmin):
 
 @admin.register(OTPCode)
 class OTPCodeAdmin(admin.ModelAdmin):
-    list_display = ["phone", "code", "purpose", "is_used", "created_at", "expires_at"]
-    list_filter = ["purpose", "is_used"]
+    list_display = ["phone", "code", "purpose", "channel", "is_used", "created_at", "expires_at"]
+    list_filter = ["purpose", "channel", "is_used"]
     search_fields = ["phone"]
+    readonly_fields = ["link_token", "telegram_chat_id", "telegram_username"]
