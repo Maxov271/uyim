@@ -1,0 +1,31 @@
+name: Uyim
+options:
+  bundleIdPrefix: uz.uyim
+  deploymentTarget:
+    iOS: "16.0"
+targets:
+  Uyim:
+    type: application
+    platform: iOS
+    sources:
+      - UyimApp
+    info:
+      path: UyimApp/Info.plist
+      properties:
+        UILaunchScreen: {}
+        CFBundleDisplayName: "Uyim"
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: false
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: uz.uyim.app
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        TARGETED_DEVICE_FAMILY: "1"
+        SWIFT_VERSION: "5.0"
+        GENERATE_INFOPLIST_FILE: NO
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    resources:
+      - UyimApp/Assets.xcassets
